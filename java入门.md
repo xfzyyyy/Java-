@@ -1,6 +1,6 @@
 # java入门
 
-## day1
+## java基础
 
 ### 1.编译和运行
 
@@ -14,9 +14,7 @@
 
 在一个java源文件中可以声明多个class，但是只能最多有一个类声明为public的，而且声明为public的类的类名必须和源文件名相同。
 
-### 3.
-
-程序入口是main()方法，格式是固定的
+### 3.程序入口是main()方法，格式是固定的
 
 ```java
 class HelloJava{
@@ -29,9 +27,7 @@ class Person{
 }
 ```
 
-### 4.
-
-输出数据：
+### 4.输出数据：
 
 ```java
 System.out.println("hello world");//换行System.out.print("hello world");//不换行
@@ -94,8 +90,6 @@ project->module->package->class
 **long lg2=12222212121212121，会报错，因为默认的整数字面量是int，这里长度超过了int类型，但没超过long类型，需要在后面加L/l：long lg2=12222212121212121L**
 
 **float score=98.5，会报错，因为默认的浮点数字面量是double，需要在后面加F/f：float score=98.5F**,表示字面量98.5是float类型
-
-
 
 类名大驼峰让，首字母大写
 
@@ -807,3 +801,402 @@ remove(Object o)删除指定的元素，返回删除是否成功，只会删除*
 set()修改指定索引的元素，返回被修改的元素（修改前的值）
 
 **注意：从集合中遍历删除元素要倒叙遍历，可以避免漏掉元素**
+
+## Java加强
+
+### 01static
+
+static**是静态**的意思，可以**修饰成员变量和成员方法**。
+
+#### 静态成员变量
+
+static修饰成员变量表示该成员变量**只在内存中只存储一份**，可以被共享修改和访问。**存在堆内存的类的静态变量区**
+
+**静态成员变量**（有static修饰，属于类，内存中加载一次）：常表示如在线人数信息等需要被共享的信息，可以被共享访问。
+
+访问：**类名.静态成员变量（推荐），不推荐使用对象来访问**，同一个类中可以省略类名
+
+**实例成员变量：**无static修饰，属于对象，只能通过对象名来访问。
+
+```Java
+package com.xfzy.d1_static;
+
+public class StaticFieldDemo1 {
+    public static void main(String[] args) {
+        System.out.println(User.onlineNumber);//通过类名访问
+        User u=new User();
+        u.onlineNumber++;
+        System.out.println(u.onlineNumber);//也可以通过对象访问到，但不推荐！
+    }
+}
+```
+
+```Java
+package com.xfzy.d1_static;
+
+public class User{
+    public static int onlineNumber=190;
+}
+```
+
+#### 静态成员方法
+
+静态成员方法（有static修饰，属于类），建议用类名访问，虽然也可以用对象访问到。
+
+实例成员方法（无static修饰，属于实例），只能用对象触发访问。
+
+使用场景：表示**对象自己的行为**的，且方法中**需要访问实例成员**的，则该方法必须**声明为实例方法**。
+
+如果该方法是以**执行一个共用功能为目的**，则可以**申明成静态方法**。
+
+**内存原理：**方法区中首先加载出静态方法main,以及其他静态方法。栈内存中运行main方法。栈内可以直接访问到已加载出来的静态方法。可直接使用类名或者方法名（同一个类中）调用。栈中new新对象之后，在堆内开辟内存，存储变量和方法的引用，指向方法区中同时加载出来的实例方法
+
+```java
+package com.xfzy.d1_static;
+
+public class Student {
+    //实例成员变量
+    private String name;
+
+    public Student(String name) {
+        this.name = name;
+    }
+
+    //静态成员方法
+    public static int getMax(int age1,int age2){
+        return age1>age2?age1:age2;
+    }
+    //实例成员方法
+    public void study(){
+        System.out.println(name+"好帅");
+    }
+
+    public static void main(String[] args) {
+        //1.类名.静态方法名
+        System.out.println(Student.getMax(10, 3));
+        //直接方法名
+        System.out.println(getMax(10, 3));
+        //实例方法只能用实例访问
+        //study();//Non-static method 'study()' cannot be referenced from a static context
+        Student s=new Student("猪八戒");
+        s.study();
+    }
+}
+
+```
+
+#### **static访问注意事项：**
+
+静态方法只能访问静态成员变量，不可以**直接**访问实例成员变量
+
+实例成员方法可以访问静态成员变量以及实例成员变量
+
+静态成员方法中是不可以用this的，因为this是指向实例的。
+
+```java
+package com.xfzy.d1_static;
+
+public class Student {
+    //实例成员变量
+    private String name;
+    //静态成员变量
+    private static String hobby="吃饭";
+
+    public Student(String name) {
+        this.name = name;
+    }
+ 
+    //静态成员方法  只能访问静态成员变量，不可以访问实例成员变量   不可以用this的，因为this是指向实例的。
+    public static int getMax(int age1,int age2){
+        System.out.println(hobby);//能访问静态成员变量
+        //System.out.println(name+"好帅");//Non-static field 'name' cannot be referenced from a static context
+        //System.out.println(this);//'com.xfzy.d1_static.Student.this' cannot be referenced from a static context
+        return age1>age2?age1:age2;
+    }
+    //实例成员方法   实例成员方法可以访问静态成员变量以及实例成员变量
+    public void study(){
+        System.out.println(name+"好帅");
+        System.out.println(hobby);
+    }
+
+    public static void main(String[] args) {
+        //1.类名.静态方法名
+        System.out.println(Student.getMax(10, 3));
+        //2.直接方法名（同一个类中才可以）
+        System.out.println(getMax(10, 3));
+        //3.实例.静态方法名
+        Student s=new Student("猪八戒");
+        System.out.println(s.getMax(10, 3));
+        
+        //实例方法只能用实例访问
+        //study();//Non-static method 'study()' cannot be referenced from a static context
+        s.study();
+    }
+}
+```
+
+### 02工具类
+
+工具类：**类中都是一些静态方法**，每个方法都是以完成一个共用的功能为目的，这个类用来给系统**开发人员共同使用**的。
+
+由于工具类都是静态方法，直接用类名就可以访问，因此，工具类无需创建对象，建议将工具类构造器私有化。
+
+```java
+package com.xfzy.d12_static_util;
+
+public class Util {
+    //构造器私有！工具类无需创建对象，所以把构造器私有化
+    private Util(){
+
+    }
+    public static String createVeritifyCode(int n){
+        String code="";
+//        生成一个随机验证码
+        return code;
+    }
+}
+```
+
+### 03代码块
+
+代码块是类的五大成分之一（成员变量，构造器，方法，代码块，内部类），定义在内中方法外。
+
+在Java类下，使用{}括起来的代码被称为代码块。
+
+#### 静态代码块
+
+格式：static{}
+
+特点：需要通过**static关键字修饰，随着类的加载而加载，并且自动触发、只执行一次**
+
+使用场景：在类加载的时候做一些**静态数据初始化**的操作，以便后续使用。
+
+#### 构造代码块/实例代码块（了解，见得少）
+
+格式：{}
+
+特点：每次创建对象，**调用构造器执行时，都会执行**该代码块中的代码，**并且在构造器执行前执行**
+
+使用场景：初始化实例资源
+
+### 04单例模式
+
+#### 设计模式：
+
+开发中一个问题有n中解决方案，最优的一种被总结出来称为设计模式。
+
+设计模式共有20多种。
+
+设计模式：用来解决什么问题？遇到这种问题该模式怎么写，它如何解决的？
+
+#### **单例模式：**
+
+**可以保证系统中，应用该模式的这个类永远只有一个实例，即一个类永远只能创建一个对象。**
+
+例如任务管理器对象只有一个，可以节约内存空间。
+
+单例实现的方式有很多：饿汉单例模式、懒汉单例模式...
+
+##### 饿汉单例模式：
+
+在用类获取对象的时候。对象已经提前为你创建好了。
+
+**设计步骤：**定义一个类，把**构造器私有**。定义一个**静态变量存储一个对象。**
+
+```java
+package com.xfzy.d4_static_singleinstance;
+
+/**
+ * 使用饿汉单例实现单例类
+ */
+public class SingleInstance {
+    /**
+     * 2.饿汉单例是在获取对象之前就提前准备好了一个，这个对象只能是一个，所以定义静态成员变量。
+     */
+    public static SingleInstance instance=new SingleInstance();
+    /**
+     * 1.构造器私有
+     */
+    private SingleInstance(){
+    }
+}
+```
+
+```java
+package com.xfzy.d4_static_singleinstance;
+
+public class Test1 {
+    public static void main(String[] args) {
+        SingleInstance s1=SingleInstance.instance;
+        SingleInstance s2=SingleInstance.instance;
+        System.out.println(s1 == s2);//true证明拿的是同一个对象
+    }
+}
+```
+
+##### 懒汉单例模式：
+
+真正需要该对象的时候，才去创建一个对象（延迟加载对象）
+
+**设计步骤：**1.**构造器私有**。2定义一个静态变量存储一个对象(一定要私有化！不要让别人通过这个变量拿到了null)。3**提供一个方法返回单例对象**
+
+```java
+package com.xfzy.d4_static_singleinstance;
+
+public class SingleInstance2 {
+    /**
+     * 1.定义一个静态变量存储一个对象即可；属于类，与类一起加载
+     * 一定要私有化！不要让别人通过这个变量拿到了null
+     */
+    private static SingleInstance2 instance;//null
+    /**
+     * 2.构造器私有
+     */
+    private SingleInstance2() {
+
+    }
+    /**
+     * 3.必须提供一个方法返回一个单例对象
+     */
+    public static SingleInstance2 getInstance() {
+        //判断是否已经创建了实例，确保单例！
+        if(instance==null){
+            instance=new SingleInstance2();
+        }
+        return instance;
+    }
+}
+```
+
+```java
+package com.xfzy.d4_static_singleinstance;
+
+public class Test2 {
+    public static void main(String[] args) {
+        SingleInstance2 s1=SingleInstance2.getInstance();
+        SingleInstance2 s2=SingleInstance2.getInstance();
+        System.out.println(s1 == s2);//true 单例！
+    }
+}
+```
+
+**饿汉快，懒汉节省内存。**
+
+
+
+### 05继承
+
+Java中提供了一个关键字extends。可以实现让一个类和另一个类建立起父子关系。
+
+```java
+public class Student extends People{}
+```
+
+当子类继承父类后，就可以直接使用父类公共的属性和方法了。
+
+提高复用性，减少代码冗余，增强类的功能扩展性。
+
+内存原理：当new一个子类的时候，堆内存中开辟了一个对象，这个对象包括父类空间super，子类空间this两部分，但是通过实例名.属性/方法都是可以自动访问对应的。
+
+#### 特点：
+
+1，子类不会继承父类的构造器，父类构造器用于初始化父类对象呀。
+
+2，java是**单继承**模式：一个子类只能继承一个直接父类。但是可以**多层继承**，爷父子。（就近原则，先用爸爸的）
+
+​		**不支持多继承**是因为有可能出现冲突，比如两个父类有同名方法。
+
+3，java中所有的类都是Object类的子类。
+
+有争议的观点：
+
+1，**子类可以继承父类的私有成员，但是不能直接访问。**
+
+2，**子类不可以继承父类的静态成员，因为静态成员只能有一份，只能算是共享的。**
+
+
+
+#### 访问特点：
+
+在子方法中访问成员（成员变量、成员方法）满足：
+
+**就近原则**，先找子类，子类没有找父类，父类没有就报错。
+
+如果出现重名，一定要在子类使用父类的，用**super.父类成员变量/方法**，子类自己的**this.子类成员变量/方法**
+
+
+
+#### 方法重写：
+
+继承体系中，子类出现了和父类中一模一样的方法申明，我们就称子类这个方法是重写的方法。
+
+**@Override**写在重写方法之上，用于校验，可以提高程序可读性
+
+```
+@Override //重写校验注解，加上后，这个方法必须是正确重写的，更安全
+```
+
+##### **重写的要求：**
+
+**1重写方法的名称、形参列表必须与被重写方法的名称和参数列表一致。**
+
+**2私有方法不能被重写！**
+
+**3静态方法不能被重写**，父类的静态方法是父类的，用父类名调
+
+**4**子类重写父类方法时，访问**权限必须大于或者等于父类****（private<缺省<protected<public）**
+
+**重写是否成功就看@Override报不报错！《申明不变，重新实现！》**
+
+#### 
+
+#### 子类继承父类后构造器特点：
+
+子类中**所有的构造器默认都会先访问父类中无参构造器**，在执行自己。
+
+##### 为什么？现有爸爸才有儿子
+
+1.因为子类在初始化的时候，有可能会使用到父类中的数据，如果父类没有完全初始化完成，子类将无法使用父类的数据。
+
+2.子类初始化之前，一定要**调用父类构造器先完成父类数据空间的初始化**
+
+##### 如何调用的父类构造器？
+
+**默认的子类构造器第一行都是super();**
+
+写不写都有，默认找父类的无参数构造器执行。
+
+
+
+#### super()调用父类的有参构造器
+
+作用：**初始化继承自父类的数据。**
+
+如果父类中没有无参构造器，只有有参构造器，会报错，因为子类默认调用父类的无参构造器。
+
+解决：子类构造器中可以书写super(...),手动调用父类的有参构造器。或者父类无参构造器写出来。
+
+
+
+#### this、super
+
+this代表本类（子类）对象的引用，super代表父类存储空间的标识。
+
+**super()：调用父类构造器**，作用：**初始化继承自父类的数据。**
+
+**this()：本类构造器中访问兄弟构造器**
+
+```java
+public Student(String name){
+	this(name,"重庆邮电大学");//如果不填写学校，默认用重庆邮电大学，调用其他构造器！
+}
+public Student(String name,String school){
+	this(name,"重庆邮电大学");
+}
+```
+
+**注意：**
+
+**子类通过this()调用本类的其他构造器，本类其他构造器会通过super()去手动调用父类的构造器，最终还是会调用父类构造器的。**
+
+**所以this()也要放在构造器第一行，super()也是，所以二者不能共存于同一个构造器中！**（有this()了也不会默认有super()）
