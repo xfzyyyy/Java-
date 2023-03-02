@@ -979,7 +979,7 @@ public class Util {
 
 使用场景：初始化实例资源
 
-### 04单例模式
+### 04设计模式--单例模式
 
 #### 设计模式：
 
@@ -1200,3 +1200,553 @@ public Student(String name,String school){
 **子类通过this()调用本类的其他构造器，本类其他构造器会通过super()去手动调用父类的构造器，最终还是会调用父类构造器的。**
 
 **所以this()也要放在构造器第一行，super()也是，所以二者不能共存于同一个构造器中！**（有this()了也不会默认有super()）
+
+
+
+### 06 包
+
+包是用来分门别类管理不同类的，类似于文件夹、建包利于程序的管理和维护。
+
+**建包的语法格式** ：package 公司域名倒写.技术名称。建议小写且具备意义。（idea中都自动写好了这一行）
+
+不同包下的类需要导入使用：
+
+**导入包格式**：import 包名.类名；
+
+1 同一个包下的类可以直接访问
+
+2 不同包下的类需要导入包
+
+3 如果这个类中使用不同的包下的相同的类名，此时默认的只能导入一个包，另一个**类要使用全名访问(带包名访问)。**
+
+```java
+package com.xfzy.d1_package;
+
+import com.xfzy.d1_package.it.Student;
+
+public class Test {
+    //1 同一个包下的类可以直接访问
+    //2 不同包下的类需要导入包
+    Student s = new Student();
+    //3 如果这个类中使用不同的包下的相同的类名
+    //  此时默认的只能导入一个包，另一个类要使用全名访问(带包名访问)。
+    com.xfzy.d1_package.it2.Student s2=new com.xfzy.d1_package.it2.Student();
+}
+```
+
+
+
+### 07权限修饰符
+
+用来控制一个成员能够被访问的范围。
+
+可以修饰成员变量。方法，构造器，内部类，不同权限修饰符的成员能够被访问的范围将受限制。
+
+**权限修饰符作用范围：**
+
+private		同类中
+
+缺省 			同类中、同包不同类
+
+protected   同类中、同包不同类、不同包下的子类（用子类访问）
+
+public		   同类中、同包不同类、不同包下的子类（用子类访问）、不同包不同类
+
+```java
+package com.xfzy.d2_modifier;
+
+public class Dad {
+    /**
+     * 私有方法
+     */
+    private void privateMethod() {
+        System.out.println("--private--");
+    }
+
+    /**
+     * 缺省修饰成员
+     */
+    void method(){
+        System.out.println("--缺省--");
+    }
+
+    /**
+     * 受保护的方法
+     */
+    protected void protectedMothod(){
+        System.out.println("--受保护的--");
+    }
+    /**
+     * public修饰的方法
+     */
+    public void publicMothod(){
+        System.out.println("--public--");
+    }
+
+    public static void main(String[] args) {
+        //同一个类中都可以访问到
+        Dad f=new Dad();
+        f.privateMethod();
+        f.method();
+        f.protectedMothod();
+        f.publicMothod();
+    }
+}
+```
+
+注意：protected 不同包下的子类（用子类访问）：
+
+```java
+package com.xfzy.d2_modifier.itcast;
+
+import com.xfzy.d2_modifier.Dad;
+
+public class Son extends Dad {
+    public static void main(String[] args) {
+        //同一个类中都可以访问到
+        Dad f=new Dad();
+
+        //私有方法只能在同类中访问到
+        //f.privateMethod();//报错
+
+        //缺省方法只能在同包下访问
+        //f.method();//报错
+
+        //protected只能在同包类或者其他类的子类才可以访问到（子类中用子类访问而不是父类）
+        Son s=new Son();
+        s.protectedMothod();//子类中用子类访问
+
+        f.publicMothod();
+    }
+}
+```
+
+注意：自己定义成员（方法、构造器、成员变量等）一般需满足如下要求：
+
+成员变量一般私有；
+
+方法一般公开；
+
+如果该成员只希望本类访问，使用private修饰。
+
+如果该成员只希望本类、同一个包下的其它类和子类访问，使用protected修饰符
+
+
+
+### 08final的语法
+
+final的作用：
+
+可以修饰（类、方法、变量）
+
+1修饰类：表示该类是**最终类，不能被继承**；例如工具类可以加final
+
+2修饰方法：表示该类是**最终方法，不能被重写**；可以定义常量
+
+3修饰变量：表示该**变量第一次赋值后，不能再次被赋值**（有且仅能被赋值1次）（修饰局部变量，静态成员变量->常量，实例成员变量）
+
+注意：final修饰变量后，如果是**基本类型变量，则不可改变值，**如果是**引用类型变量，则对象地址不能改变，对象内容可以改变**。
+
+
+
+### 09常量
+
+使用**public static final修饰的成员变量**，**必须有初始值**，而且执行的过程中其值不能被改变。
+
+作用：**可以用于系统的配置信息，**方便程序维护，提高可读性。
+
+常量命名规范：英文单词**全部大写**。多个单词下划线连接起来。
+
+执行原理：
+
+在编译阶段会**宏替换**，把使用常量的地方全都替换成真实的字面量。让使用常量的程序执行性能与直接使用字面量是一样的。
+
+
+
+### 10枚举
+
+枚举是Java中的一种特殊类型
+
+枚举的作用：”**是为了做信息的标志和信息的分类**“。相比于定义几个常量，安全性准确性高很多，且天然结合了switch分支。
+
+（做分类：用枚举；固定具体值：用常量）
+
+**定义格式：**
+
+```java
+//修饰符 enum 枚举名称{
+//	第一行都是罗列枚举类实例的名称
+//}
+enum Season{
+    //第一行都是罗列枚举类实例的名称
+    SPRING,SUMMER,AUTUMN,WINTER;
+}
+```
+
+**反编译：**
+
+当我们在命令窗口使用**javac Season.java**然后使用**javap Season.class**即可反编译，得到如下代码：
+
+```Java
+public final class Season extends java.lang.Enum<Season> {
+  public static final Season SPRING;
+  public static final Season SUMMER;
+  public static final Season AUTUMN;
+  public static final Season WINTER;
+  public static Season[] values();
+  public static Season valueOf(java.lang.String);
+  static {};
+}
+```
+
+**枚举特征：**
+
+枚举类都是继承了枚举类型：java.lang.Enum
+
+枚举都是最终类，不可以被继承
+
+**枚举类的构造器都是私有的**，**枚举对外不能创建对象。**
+
+枚举类的第一行默认都是罗列枚举对象的名称的。
+
+枚举相当于是**多例模式**：只能创建固定个数对象。
+
+
+
+### 11抽象类
+
+abstract：抽象，可以修饰类、成员方法。
+
+abstract修饰类，这个类就是抽象类；修饰方法，这个方法就是抽象方法。
+
+```java
+//修饰符 abstract class 类名{
+//	修饰符 abstract 返回值类型 方法名称(形参列表);
+//}
+package com.xfzy.d6_abstract;
+
+public abstract class Animal {
+    /**
+     * 每个动物可能跑的不一样，所以先不实现，交给子类自己去实现。约定子类一定要实现，不然会报错！
+     * 所以用抽象类、方法
+     * 抽象方法不能写方法体代码。
+     */
+    public abstract void run();
+}
+
+```
+
+**使用场景：**抽象类一般作为父类，让子类继承；可以理解成不完整的设计图。
+
+当父类知道子类一定要完成某些行为，但是每个子类又实现的不一样，于是该父类就把该行为定义成抽象方法形式，具体实现交给子类去完成，此时这个类就可以声明为抽象类。**约定子类一定要实现，不然会报错！**
+
+
+
+#### 注意：
+
+1类有的东西，抽象类都有
+
+2抽象类中可以没有抽象方法，但是有抽象方法的必须是抽象类
+
+3一个类继承了抽象类必须重写抽象类的全部抽象方法，否则这个类也必须定义成抽象类。
+
+4不能有abstract修饰变量、代码块、构造器。
+
+**most important:得到了抽象方法，失去了创建对象的能力！**
+
+**为什么？**假如可以创建，抽象方法连代码块都没有，运行会报错。**即使抽象类中没有抽象方法，也不能**创建对象，如果我这时候让你创建了，你偷偷加上抽象方法怎么办？**所以抽象类不能创建对象！**
+
+
+
+#### final和abstract是互斥关系！
+
+**abstract定义的抽象类**作为模板让子类继承，**final定义的类**不能被继承。
+
+**抽象方法**定义通用功能让子类重写，**final定义的方法**子类不能重写。
+
+
+
+### 12设计模式--模板方法模式
+
+模板方法模式：当系统中出现同一个功能多处开发，而该功能大部分代码一样，部分代码可能不同的时候。
+
+**实现步骤：**
+
+1把功能定义为一个所谓的模板方法，放在抽象类中，模板方法中只定义通用且能确定的代码。
+
+2模板方法中不能决定的功能定义成抽象方法让子类去实现。
+
+模板方法最好加上final，不能被重写
+
+```java
+//写作文案例
+package com.xfzy.d9_template;
+
+public abstract class Student {
+    //模板方法最好加上final
+    public final void write(){
+        System.out.println("这是作文开头，一样的部分");
+        zhengwen();
+        System.out.println("这是作文结尾，一样的部分");
+    };
+    public abstract void zhengwen();
+
+}
+
+```
+
+
+
+### 13接口
+
+定义格式：
+
+public interface 接口名 {}
+
+jdk8之前接口中只能有抽象方法和常量
+
+注意：由于接口体现规范思想，规范默认都是公开的，所以代码层面，**public static final 和public abstract可以省略不写。**
+
+```java
+package com.xfzy.d10_interface;
+
+public interface InerfaceDemo {
+    /**
+     * 目标：接口中成分特点
+     * jdk8之前接口中只能有抽象方法和常量
+     */
+
+    //1常量
+    //注意：由于接口体现规范思想，规范默认都是公开的，所以代码层面，public static final 可以省略不写。
+    String MY_NAME = "fangqianlin";
+    //public static final String MY_NAME="fangqianlin";
+
+    //2抽象方法
+    //注意：由于接口体现规范思想，规范默认都是公开的，所以代码层面，public abstract可以省略不写。
+    void run();
+    //public abstract void run();
+    void eat();
+    //public abstract void eat();
+}
+```
+
+#### 接口的用法
+
+接口是用来被类实现（implements）的，实现接口的类称为是实现类。实现类可以理解为所谓的子类。
+
+```java
+修饰符 class 实现类 implements 接口1,接口2,接口3，...{
+
+}
+```
+
+```java
+package com.xfzy.d11_interface_implements;
+
+public interface SportsMan {
+    void run();
+    void competition();
+}
+```
+
+```java
+package com.xfzy.d11_interface_implements;
+
+public class PingpangMan implements SportsMan{
+    private String name;
+    public PingpangMan(String name) {
+        this.name = name;
+    }
+    //实现接口的方法
+    @Override
+    public void run() {
+
+    }
+
+    @Override
+    public void competition() {
+
+    }
+}
+```
+
+#### **注意：**
+
+**接口可以单实现，也可以多实现。**
+
+**一个类实现接口，必须实现全部接口的全部抽象方法，否则这个类需要定义成抽象类。**
+
+
+
+**类和类的关系：单继承**
+
+**类和接口的关系：多实现**
+
+**接口和接口的关系：多继承**，一个接口可以同时继承多个接口。
+
+
+
+#### 接口多继承
+
+作用：规范合并，整合多个接口为同一个接口，便于子类实现。
+
+
+
+#### jdk8新增方法（开发很少用，Java源码涉及）
+
+去过按照原来的实现类需要实现接口的所有抽象方法，当项目需要升级时，我们给接口添加方法了，牵一发而动全身的需要给实现类添加实现。很麻烦，所以现在**允许接口中直接定义带有方法体的方法。**
+
+##### 1.默认方法（jdk8开始）
+
+必须用**default修饰**，默认用public修饰
+
+默认方法，接口不能创建对象，这个方法只能过继给实现类，由**实现类的对象调用**。
+
+##### 2.静态方法
+
+必须使用**static修饰**，默认用public修饰
+
+接口的静态方法，必须由**接口名自己调用**。
+
+##### 3私有方法（实例方法）（jdk9支持）
+
+必须使用**private修饰**，在接口内部才能访问（**其他私有方法，默认方法中去调用**）
+
+
+
+#### 接口注意事项
+
+1 **接口不能创建对象**！（抽象类都不能创建，接口更抽象！）
+
+2 一个类实现多个接口，**多个接口中有同样的静态方法不冲突**！（实现类不让调接口的静态方法！不像实例可以调用类的静态方法）
+
+3 一个类继承了父类，同时又实现了接口，**父类中和接口中有同名方法。默认用父类的**！（先有亲爸才有干爹！）
+
+4 一个类实现多个接口，多个接口中存在同名的默认方法，不冲突，但是需要实现类重写该方法，不然也会报错。（把他俩全干掉）
+
+5 一个接口继承多个接口，是没有问题的，但是如果多个接口存在规范冲突则不能多继承。（比如两个抽象方法名返回值不同。）
+
+
+
+### 14多态
+
+**同类型的对象，执行同一个行为，会表现出不同的行为特征。**
+
+##### 多态的常见形式：
+
+```java
+父类类型 对象名称=new 子类构造器;
+接口 对象名称=new 实现类构造器;
+```
+
+```java
+package com.xfzy.d1_polymorphic;
+
+public class Test {
+    public static void main(String[] args) {
+//        Dog a=new Dog();
+//        a.run();
+//        Rabit r=new Rabit();
+//        r.run();
+        //1.多态的形式
+        Animal a=new Dog();
+        a.run();//狗狗跑得快,[编译看Animal中有没有run(),运行的时候走的Dog中的方法]
+        System.out.println(a.name);//父类动物,[编译看Animal中有没有name,运行的时候也走的Animal中的name]
+
+        Animal r=new Rabit();
+        r.run();//兔子跑得哈哈哈哈,[编译看Animal中有没有run(),运行的时候走的Rabit中的方法]
+        System.out.println(r.name);//父类动物,[编译看Animal中有没有name,运行的时候也走的Animal中的name]
+
+    }
+}
+```
+
+##### **多态中成员访问特点：结合以上代码看**
+
+方法调用：编译看左边，运行看右边。
+
+变量调用：编译看左边，运行也看左边。（**多态侧重行为多态**）
+
+##### **多态使用的前提：**
+
+有继承/实现关系；有父类引用指向子类对象；有方法重写。
+
+
+
+#### 多态的优势
+
+1.在多态的形式下，**右边的对象可以实现解耦合**，便于扩展和维护。
+
+```java
+Animal a=new Dog();//比如这里想要用其他的类，直接将Dog()整个替换成Cat();
+a.run();//后续业务行为随对象而变，后续代码无需修改
+```
+
+2.定义**方法的时候，使用父类型作为参数，该方法就可以接收这父类的一切子类对象，**体现出多态的扩展与便利性。
+
+```java
+//要求所有动物都可以进来比赛
+public void go(Animal a) {
+   System.out.println("开始");     
+   a.run();
+   System.out.println("结束");   
+}
+```
+
+
+
+#### 多态产生一个问题
+
+多态下不能访问子类的独有功能。（编译阶段就看父类的）
+
+```java
+Animal a=new Dog();//比如这里想要用其他的类，直接将Dog()整个替换成Cat();
+a.run();//父类有的方法
+//a.kanmen();//狗才有的方法，会报错->多态下不能访问子类的独有功能。
+```
+
+
+
+#### 多态下引用数据类型的类型转换
+
+**自动类型转换（从子到父）**：子类对象赋值给父类类型的变量指向。
+
+```java
+Animal a=new Dog();//比如这里想要用其他的类，直接将Dog()整个替换成Cat();
+a.run();//父类有的方法
+```
+
+**强制类型转换（从父到子）**：子类 对象变量=（子类）父类类型的变量
+
+**作用：可以解决多态下的劣势。可实现调用子类独有的功能**
+
+```java
+Animal a=new Dog();//比如这里想要用其他的类，直接将Dog()整个替换成Cat();
+a.run();//父类有的方法
+//a.kanmen();//狗才有的方法，会报错->多态下不能访问子类的独有功能。
+Dog d=(Dog)a;//强制转换——从父类类型到子类类型必须强制转换
+d.kanmen();//狗才有的方法，可以访问了
+```
+
+注意：如果**转型后的类型和对象真实类型不是同一种类型**，**编译不报错，转换的时候会报错！**
+
+```java
+Animal a=new Dog();//比如这里想要用其他的类，直接将Dog()整个替换成Cat();
+Rabit d=(Rabit)a;//强制转换——类型不一样，编译不报错，转换的时候会报错！
+```
+
+Java建议强制转换前使用**instanceof判断当前对象的真实类型**，在进行强制转换。
+
+```java
+if(变量名 instanceof 真实类型)//判断左边变量指向的对象真是类型是否是右边类型或者是其子类类型。是则返回true
+```
+
+```java
+Animal a=new Dog();
+if(a instanceof Dog){
+	Dog d=(Dog)a;
+}else if{
+    Rabit r=(Rabit)a;
+}
+```
+
