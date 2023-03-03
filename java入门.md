@@ -1750,3 +1750,432 @@ if(a instanceof Dog){
 }
 ```
 
+### 15内部类
+
+内部类就是定义在一个类里面的类，里面的类可以理解成（寄生），外部类可以理解成宿主。
+
+```java
+public class People{
+    //内部类
+	public class Heart{
+		
+	}
+}
+```
+
+**内部类场景：**当一个事物的内部，还有一个部分需要一个完整的结构来进行描述，而这个**内部的完整的结构又只有为外部事物提供服务**，那么整个内部的完整结构可以使用内部类来设计。
+
+**内部类作用：** 内部类通常可以方便访问外部类的成员，包括私有成员。
+
+​						内部类提供了更好的封装性，内部类本身就可以用private protected等修饰，封装性可以做更多控制。
+
+#### 内部类分类：
+
+##### 静态内部类：（用的少）
+
+有static修饰，属于外部类本身
+
+它的特点和使用 与 普通类是完全一样的，类有的成分他都有，只是位置在别人里面而已。
+
+```java
+public class Outer{
+    //静态内部类
+	public static class Inner{
+		
+	}
+}
+```
+
+```java
+//静态内部类创建对象的格式
+public class Test{
+	public static void main(String[] args){
+		Outer.Inner in=new Outer.Inner();
+	}
+}
+```
+
+静态内部类    **可以**直接**访问外部类的静态成员**（外部类静态成员只有一份可以被共享访问）
+
+静态内部类**不可以**直接**访问外部类的实例成员**（外部类的实例成员必须用外部类对象访问）
+
+
+
+##### 成员内部类（用的多一点）
+
+无static修饰，属于外部类的对象。
+
+jdk16之前，成员内部类中不能定义静态成员，jdk开始也可以定义静态成员了（虽然属于外部类实例，但是还是只有一份，共享）
+
+```java
+public class Outer{
+    //成员内部类
+	public class Inner{
+		
+	}
+}
+```
+
+```java
+//成员内部类创建对象的格式
+public class Test{
+	public static void main(String[] args){
+		Outer.Inner in=new Outer().new Inner();//因为内部类属于外部类的实例。
+        in.show();//访问内部类实例方法
+        Outer.Inner.test();//访问内部类静态方法
+	}
+}
+```
+
+1.成员内部类**可以直接访问外部类的静态成员**（外部类的静态成员只有一份被共享访问）
+
+2.成员内部类的**实例方法中可以直接访问外部类的实例成员**。（因为必须先有外部类对象，才能有成员的内部类对象，所以可以直接访问外部类对象的实例成员）
+
+注意：在**内部类中访问所在外部类对象实例**需要使用：**外部类名.this**
+
+成员内部类可能用的更多，因为要现有外部类对象才能有内部类对象，而静态内部类可以独立出来。
+
+
+
+##### 局部内部类（没啥用）
+
+只服务于局部执行体，现在还可以定义局部接口。
+
+局部内部类放在方法、代码块、构造器等执行体中。
+
+局部内部类的类文件名为：**外部类$N内部类.class**
+
+
+
+##### 匿名内部类（重点）
+
+本质上是一个**没有名字的局部内部类**，定义在方法中、代码块中、等。也会产生class文件。
+
+**作用：方便创建子类对象，最终目的是为了简化代码编写。**
+
+格式：
+
+```
+new 类|抽象类名|或者接口名(){
+	重写方法;
+}
+```
+
+```java
+//例如：Employee是一个员工抽象类
+Employee a=new Employee(){
+	public void work(){
+		
+	}
+}
+a.work();
+```
+
+```java
+package com.xfzy.d8_innerclass_anonymous;
+
+public class Test {
+    public static void main(String[] args) {
+        //Animal a=new Tiger();
+        //匿名内部类认为不需要定义子类,编译还是看左，运行看右。
+        //不需要定义子类，方便快速定义一个对象
+        Animal a = new Animal() {//实际上是多态，等同于上面那行
+            @Override
+            public void run() {
+                System.out.println("老虎跑得快");
+            }
+        };
+        a.run();
+    }
+}
+
+//匿名内部类认为不需要定义子类
+//class Tiger extends Animal{
+//    @Override
+//    public void run() {
+//        System.out.println("老虎跑得快");
+//    }
+//}
+abstract class Animal {
+    public abstract void run();
+}
+```
+
+**特点：** 匿名内部类是一个**没有名字的内部类**
+
+​			匿名内部类**写出来就会产生一个匿名内部类的对象。**
+
+​		    匿名内部类的对象类型相当于是当前new的那个类型的子类型（多态）。
+
+
+
+**在开发中的使用形式：可以直接作为方法的实际参数进行传输 **
+
+```java
+package com.xfzy.d8_innerclass_anonymous;
+
+/**
+ * 掌握匿名内部类的使用形式
+ */
+public class Test2 {
+    public static void main(String[] args) {
+
+        Swimming s=new Swimming() {
+            @Override
+            public void swim() {
+                System.out.println("学生的开了自由泳");
+            }
+        };
+        go(s);//类似对象回调
+        //直接当作参数
+        go(new Swimming() {
+            @Override
+            public void swim() {
+                System.out.println("更简化了游泳");
+            }
+        });
+    }
+    public static void go(Swimming s){
+        s.swim();
+    }
+}
+//class Student implements Swimming{
+//    @Override
+//    public void swim() {
+//        System.out.println("学生的开了自由泳");
+//    }
+//}
+interface Swimming{
+    void swim();
+}
+```
+
+
+
+匿名内部类使用场景：
+
+开发中不是我们主动去定义内部类的，而是别人需要我们写或者我们可以写的时候才会使用。匿名内部类的代码可以实现代码进一步的简化。
+
+
+
+### 16常用API
+
+#### Object类
+
+Object类的方法是一切子类都可以直接使用的（一个类默认继承了Object类/间接继承了Object类）
+
+Object类常用方法：
+
+1.toString()默认返回当前**对象在堆内存中的地址信息**：类的权限名@内存地址
+
+```java
+String toString()
+```
+
+开发中希望是对象内容数据被输出，所以tostring方法存在的**意义就是为了被子类重写，以便返回对象的内容信息**，而不是地址信息。
+
+可以使用tos加回车快速生成此重写方法。
+
+
+
+2.equals(Object obj)默认是比较当前对象与另一个**对象的地址**是否相同，相同返回true，不同返回false
+
+```java
+boolean equals(Object obj)
+```
+
+开发中希望是对象内容数据被比较输出，所以equals方法存在的**意义就是为了被子类重写，以便返回对象的内容对比信息**，而不是地址信息对比。
+
+可以使用equ加回车快速生成此重写方法。
+
+
+
+#### Objects类
+
+Objects类也是Object类的子类，是从jdk7之后才有的
+
+引入：官方重写equals方法时，在进行字符串比较时，没用对象（字符串）自己的equals方法，而是选择了Objects的equals方法来比较两个对象。
+
+**1.equals方法：比较两个对象，底层会先进行非空判断，从而可以避免空指针异常。再调用第一个参数的equals比较。**
+
+```java
+static boolean equals(Object a, Object b)
+```
+
+Objects的equals方法比较的结果是一样的，但是更安全。（比如有null）
+
+**2.isNull方法，判断变量是否为null，为null返回true**，跟==比较完全一样
+
+```java
+static boolean isNull(Object obj)
+```
+
+
+
+#### StringBuilder类
+
+https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/StringBuilder.html
+
+是一个可变的字符串类，我们可以把它看成一个对象容器。
+
+作用：提高字符串的操作效率，如拼接，修改等。
+
+StringBuilder构造器
+
+```java
+StringBuilder()
+```
+
+构造一个字符串生成器，其中没有字符，初始容量为16个字符。
+
+```java
+StringBuilder(int capacity)
+```
+
+构造一个字符串生成器，其中不包含字符，并由capacity参数指定初始容量。
+
+```java
+StringBuilder(CharSequence seq)
+```
+
+构造包含与指定的“CharSequence”相同字符的字符串生成器。
+
+```java
+StringBuilder(String str)
+```
+
+构造初始化为指定字符串内容的字符串生成器。
+
+方法：
+
+1.append()
+
+2.reverse()
+
+
+
+**性能好**
+
+String是不可变的，拼接字符串的时候要利用StringBuilder，再转成String，加一次就创建这2个对象了
+
+StringBuilder：内容可变的，拼接字符串性能好，只用这一个对象就好了。
+
+注意：stringbuilder只是**拼接字符串的手段，**效率好，最终**还是需要恢复成String类型，平时也要使用String**
+
+
+
+#### Math类
+
+https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Math.html
+
+包含执行基本数字运算的方法，Math类没有提供公开的构造器。
+
+类中的方法都是静态的，直接用Math.静态方法名就可以用。
+
+常用的跟js中差不多。
+
+```java
+static double random()
+//返回一个带正号的双精度值，大于或等于0.0且小于1.0。[0.0,1.0)
+```
+
+生成0-9的随机数
+
+```java
+  (int)Math.random()*10;
+//(int)  [0.0,1.0)  *10  ->  0-9
+```
+
+
+
+#### System类
+
+System类的功能都是通用的，直接类名调用即可，所以System不能被实例化。
+
+```java
+static void exit(int status)
+```
+
+终止当前运行的Java虚拟机，jvm终止。非零表示异常终止
+
+```java
+static long currentTimeMillis()
+```
+
+以毫秒为单位返回当前时间。从1970-1-1 00:00:00走到此刻的毫秒值(算是c语言的生日)
+
+```java
+static void arraycopy(Object src, int srcPos, Object dest, int destPos, int length)
+    //                被拷贝的数组， 开始索引   ，  目标数组   ， 粘贴位置    ，拷贝个数
+```
+
+将数组从指定的源数组（从指定位置开始）复制到目标数组的指定位置。
+
+
+
+#### BigDecimal类（大 小数类型）
+
+用于解决浮点型运算精度失真的问题
+
+比如
+
+```java
+double c=0.1+0.2;//0.300000000004
+```
+
+使用方法：
+
+**创建对象BigDecimal封装浮点型数据（最好的方式是调用方法）**
+
+禁止使用以下构造器：
+
+```java
+BigDecimal(double val)//将双精度转换为BigDecimal，这是双精度二进制浮点值的精确十进制表示。
+```
+
+以上还是会造成精度失真。
+
+可以使用字符串参数的构造器
+
+```java
+BigDecimal(double val)//将BigDecimal的字符串表示形式转换为BigDecimal。
+```
+
+**（最好的方式是调用方法）**此方法**内部其实执行了Double.toString()**,使用[“double.toString（double）”]提供的“double”规范字符串表示法，将“double”转换为“BigDecimal”
+
+```java
+public static BigDecimal valueOf(double val):包装浮点数成为BigDecimal对象
+```
+
+```java
+BigDecimal bd1= BigDecimal.valueOf(0.1);
+BigDecimal bd2= BigDecimal.valueOf(0.2);
+bd1.add(bd2);//0.3
+bd1.subtract(bd2);
+bd1.multipty(bd2);
+bd1.divide(bd2);
+```
+
+加减乘除。
+
+**运算完之后记得转成Double类型：API**
+
+```java
+bd1.doubleValue();
+```
+
+注意事项：BigDecimal是一定要精度运算的，如果除不尽，会报错。必须指定精度。
+
+```java
+BigDecimal divide(BigDecimal divisor, int scale, RoundingMode roundingMode)
+```
+
+返回“BigDecimal”，其值为“（this/divisor）”，其小数位数为指定值。
+
+```
+BigDecimal bd1= BigDecimal.valueOf(3);
+BigDecimal bd2= BigDecimal.valueOf(10);
+//bd2.divide(bd1);//0.33333~会报错。必须加范围
+bd2.divide(bd1,2,RoundingMode.HALF_UP);//0.33
+```
+
