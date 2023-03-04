@@ -2179,3 +2179,636 @@ BigDecimal bd2= BigDecimal.valueOf(10);
 bd2.divide(bd1,2,RoundingMode.HALF_UP);//0.33
 ```
 
+
+
+### 17Date类
+
+Date类的对象在Java中代表的是当前所在系统的此刻日期时间。
+
+**构造器：**
+
+```java
+Date()//日期时间
+```
+
+分配“日期”对象并对其进行初始化，使其表示分配的时间，以最接近的毫秒为单位。
+
+```java
+Date(long date)//传入毫秒值得到日期时间
+```
+
+传入毫秒值，转换成`Date`对象
+
+**获取时间毫秒值：**
+
+```java
+//1.Date的getTime()方法
+Date d=new Date();//日期对象
+long time = d.getTime();
+System.out.println(time);
+
+//2.System的方法
+long time1=System.currentTimeMillis();
+System.out.println(time1);
+```
+
+**将毫秒值转换成日期对象：**
+
+```java
+//1.构造器
+Date d1=new Date(毫秒值);
+System.out.println(d1);
+
+//2.Date对象的setTime方法
+Date d3=new Date();
+d3.setTime(毫秒值);
+System.out.println(d3);
+```
+
+
+
+### 18 SimpleDateFormat类
+
+https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/text/SimpleDateFormat.html
+
+可以对Date对象或**时间毫秒值格式化**成为我们想要的时间形式。
+
+```java
+Date对象  -> 2017年12月28日 22:54:
+时间毫秒值 -> 2017年12月28日 22:54:
+```
+
+也可以把字符串的**时间形式解析成日期对象**。
+
+```java
+2017年12月28日 22:54: -> Date对象
+```
+
+**构造器：**
+
+```
+SimpleDateFormat()
+```
+
+使用默认模式和默认日期格式符号构造“SimpleDateFormat”
+
+```
+SimpleDateFormat(String pattern)
+```
+
+使用指定模式和默认日期格式符号构造“SimpleDateFormat”
+
+```
+SimpleDateFormat(String pattern, DateFormatSymbols formatSymbols)
+```
+
+使用指定模式和指定日期格式符号构造“SimpleDateFormat”。
+
+```
+SimpleDateFormat(String pattern, Locale locale)
+```
+
+使用给定区域设置的给定模式和默认日期格式符号构造“SimpleDateFormat”。
+
+**格式化方法：**
+
+```java
+public final String format(Date date)
+```
+
+将日期   ->   日期/时间字符串
+
+```java
+public final String format(Object time)
+```
+
+将时间毫秒值  ->  成日期/时间字符串
+
+**解析方法：**
+
+```java
+Date parse(String source)
+```
+
+从给定字符串的开头分析文本以生成日期。
+
+**其他方法：**
+
+```java
+time1.after(time2);//判断time1是否在time2后面
+time1.before(time2);//判断time1是否在time2前面
+```
+
+**例子：**
+
+1格式化时间对象
+
+```java
+Date d =new Date();
+SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss EEE a");
+String rs1=sdf.format(d);
+```
+
+2格式化时间毫秒值
+
+```java
+long time = System.currentTimeMillis();
+String rs2= sdf.format(time);
+```
+
+3解析时间
+
+2017年12月28日 22:54:06
+
+```java
+public static void main throws ParseException{
+    String dateStr = "2017年12月28日 22:54:06";
+	SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");//格式要和目标格式完全一样
+	Date d =sdf.parse(dateStr);//会报错，让你检查格式对不对，需要自己抛出错误,
+	long time = d.getTime()+2L*24*60*60;//建议加L转换成浮点运算，以免越界
+	sdf.format(time);
+}
+
+```
+
+### 19Calendar类
+
+https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Calendar.html
+
+Calendar代表了系统此刻日期对应的日历对象。**是可变日期对象，一旦修改，其对象表示的时间将产生变化。**
+
+Calendar是一个抽象类，不能直接创建对象。public abstract class **Calendar**
+
+Calendar的**getInstance方法返回一个Calendar对象**，该对象的日历字段已使用当前日期和时间初始化：
+
+```java
+Calendar rightNow = Calendar.getInstance();
+```
+
+**用的时候直接打印出来以获取字段field名称。**
+
+**方法：**
+
+```java
+int get(int field)
+```
+
+返回给定日历字段的值。
+
+```java
+void set(int field, int value)
+```
+
+将给定日历字段设置为给定值。
+
+```java
+abstract void add(int field, int amount)
+```
+
+根据日历规则，向给定日历字段添加或减去指定的时间量。
+
+```java
+final Date getTime()
+```
+
+返回表示此日历的时间值（与1970-01-01的毫秒偏移量）的Date对象。
+
+```java
+long getTimeInMillis()
+```
+
+返回此日历的时间值（以毫秒为单位）。
+
+
+
+### 20JDK8新增日期API
+
+JDK8开始，java.time包提供了新的日期和时间API，主要涉及的类型有：
+
+**LocalDate：**不包含具体时间的日期。
+
+**LocalTime：**不含日期的时间。
+
+**LocalDateTime：**包含了日期及时间。
+
+**Instant：**代表的是时间戳。
+
+**DateTimeFormatter**：用于做时间的格式化和解析的
+
+**Duration：**用于计算两个“时间“间隔
+
+**Period：**用于计算两个“日期”间隔
+
+新增的Api严格区分了时刻、本地日期、本地时间，并且对日期和时间进行运算更加方便。
+
+其次，新api类型几乎全部是不变类型（和String的使用类似），可以放心使用不必担心被修改。
+
+
+
+#### **LocalDate LocalTime LocalDateTime：**
+
+分别表示日期 时间 日期时间对象，他们的类的实例是不可变对象。
+
+他们**三者构建对象和API都是通用的。**
+
+**构建对象：**
+
+```java
+static LocalDate/LocalTime/LocalDateTime now()
+```
+
+静态方法，根据当前时间创建对象
+
+```java
+static LocalDate/LocalTime/LocalDateTime of()
+```
+
+静态方法，根据指定时间/日期创建对象
+
+**LocalDateTime可以转换成LocalDate/LocalTime**：
+
+```java
+LocalDate toLocalDate()
+LocalTime toLocalTime()
+```
+
+时间修改相关API：
+
+LocalDateTime综合了LocalDate LocalTime 里面的方法，所以只用后两者来举例：
+
+这些**方法返回的是一个新的实例引用，因为他们都是不可变的。**
+
+**1向当前对象加：反之减：minus开头**
+
+```
+plusDays(long days)
+```
+
+```
+plusHours(long hours)
+```
+
+```
+plusMinutes(long minutes)
+```
+
+```
+plusMonths(long months)
+```
+
+```
+plusNanos(long nanos)
+```
+
+```
+plusSeconds(long seconds)
+```
+
+```
+plusWeeks(long weeks)
+```
+
+```
+plusYears(long years)
+```
+
+**2将xxx修改为指定值并返回新的对象**
+
+```
+withDayOfMonth(int dayOfMonth)
+```
+
+```
+withDayOfYear(int dayOfYear)
+```
+
+```
+withHour(int hour)
+```
+
+```
+withMinute(int minute)
+```
+
+```
+withMonth(int month)
+```
+
+**3判断日期前后**
+
+```java
+boolean isAfter(ChronoLocalDateTime<?> other)
+```
+
+```java
+boolean isBefore(ChronoLocalDateTime<?> other)
+```
+
+
+
+#### Instant时间戳
+
+jdk8获取时间戳更简单，功能更丰富。
+
+Instant类由一个静态的工厂方法now()可以返回当前时间戳:
+
+```java
+Instant instant = Instant.now();
+Date date = Date.from(instant);
+instant=date.toInstant();
+```
+
+时间戳是包含日期和时间的，与java.util.Date很类似，事实上Instant就是类似JDK8以前的Date。
+
+**Instant和Date可以相互转换。Instant默认是全球标准时间**
+
+例：拿到此刻时间
+
+```
+Instant instant = Instant.now();
+instant.atZone(ZoneId.systemDefault());//拿到本地时区id以获取本地时间
+```
+
+
+
+#### DateTimeFormatter
+
+jdk8中引入的全新的日期时间格式器DateTimeFromatter。
+
+正反都能调用format方法。
+
+```java
+LocalDateTime ldt = LocalDateTime.now();//日期时间对象
+DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");//格式器
+String s1=ldt.format(dtf);//正反都能调用format方法。
+String s2=dtf.format(ldt);//正向格式化
+```
+
+解析字符串时间成本地日期时间对象：
+
+```
+DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");//格式器
+LocalDateTime ldt = LocalDateTime.parse("2017-12-28 22:54:21",dft);
+```
+
+
+
+#### Duration Period
+
+分别表示：用于计算两个“时间“间隔、用于计算两个“日期”间隔
+
+
+
+**Duration**主要的类方法：toDays(),toHours();toMinutes(),toMillis(),toNanos()两个时间相差的天数/小时。。。
+
+用于localDateTime，也可用于Instant之间的比较：静态方法between()
+
+```java
+Duration duration = Duration.between(birthDate,today);//比较两个localDateTime实例，第二个参数减去第一个参数
+duration.toDays()();//间隔的天数
+```
+
+
+
+**Period**主要的类方法：getYears(),getMonth();getDays()，只能精确到年月日。
+
+用于localDate之间的比较：静态方法between()
+
+```java
+Period period = Period.between(birthDate,today);//比较两个localDate实例
+period.getDays();//间隔的天数
+```
+
+
+
+#### ChronoUnit
+
+ChronoUnit类是一个枚举类，可以用于在单个时间单位内测量一段时间，这个工具类是最全的了，可以**用于比较所有的时间单位。**
+
+
+
+### 21包装类
+
+其实就是8种基本数据类型对应的引用类型。
+
+基本数据类型    引用数据类型
+
+byte					Byte
+
+short				   Short
+
+int						**Integer**
+
+long					 Long
+
+char					**Character**
+
+float					Float
+
+double				Double
+
+boolean			  Boolean
+
+Java为了实现**一切皆对象**，为8种基本类型提供了对应的引用数据类型。
+
+后面的**集合和泛型其实也只能支持包装类型**，不支持基本数据类型
+
+**自动装箱：**基本类型数据变量可以直接赋值给包装类型的变量。
+
+**自动拆箱：**包装类型的变量可以直接赋值给基本数据类型的变量。
+
+
+
+**包装类的特有功能：**
+
+1**包装类的变量的默认值可以是null，容错率更高**
+
+2可以把**基本类型数据转换成字符串类型**（用处不大）
+
+```java
+integer.toString(10);//实例方法
+Integer.toString(10);//静态方法
+可以直接+"";
+```
+
+3可以把**字符串类型的数值转换成真实的数据类型**（真的很有用）
+
+```java
+Integer.parseInt("字符串类型的整数");
+Double.parseDouble("字符串类型的小数");
+```
+
+可以使用静态方法：**valueOf()更方便**
+
+```java
+Integer.valueOf()("字符串类型的整数");
+Double.valueOf()("字符串类型的小数");
+```
+
+
+
+### 22正则表达式
+
+https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html
+
+| 字符类          |                                                              |
+| --------------- | ------------------------------------------------------------ |
+| `[abc]`         | `a`, `b`, or `c` (simple class)                              |
+| `[^abc]`        | 除a、b或c以外的任何字符                                      |
+| `[a-zA-Z]`      | `a` through `z` or `A` through `Z`, inclusive (range范围)    |
+| `[a-d[m-p]]`    | `a` through `d`, or `m` through `p`: `[a-dm-p]` (union并集)  |
+| `[a-z&&[def]]`  | `d`, `e`, or `f` (intersection交集)                          |
+| `[a-z&&[^bc]]`  | `a` through `z`, except for `b` and `c`: `[ad-z]` (subtraction减法) |
+| `[a-z&&[^m-p]]` | `a` through `z`, and not `m` through `p`: `[a-lq-z]`(subtraction减法) |
+
+| 预定义字符类别 |                                                              |
+| -------------- | ------------------------------------------------------------ |
+| `.`            | Any character (may or may not match [line terminators](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html#lt))任何字符 |
+| `\d`           | A digit: `[0-9]`一个数字                                     |
+| `\D`           | A non-digit: `[^0-9]`非数字                                  |
+| `\h`           | A horizontal whitespace character: `[ \t\xA0\u1680\u180e\u2000-\u200a\u202f\u205f\u3000]` |
+| `\H`           | A non-horizontal whitespace character: `[^\h]`非水平空白字符： |
+| `\s`           | A whitespace character: `[ \t\n\x0B\f\r]`空白字符            |
+| `\S`           | A non-whitespace character: `[^\s]`非空白字符                |
+| `\v`           | A vertical whitespace character: `[\n\x0B\f\r\x85\u2028\u2029]垂直空白字符：` |
+| `\V`           | A non-vertical whitespace character: `[^\v]`                 |
+| `\w`           | A word character: `[a-zA-Z_0-9]`英文数字下划线               |
+| `\W`           | A non-word character: `[^\w]`一个非单词字符                  |
+
+| 贪婪量词           |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| *X*`?`             | *X*, once or not at all一次或者0次                           |
+| *X*`*`             | *X*, zero or more times零次或多次                            |
+| *X*`+`             | *X*, one or more times一次或多次                             |
+| *X*`{`*n*`}`       | *X*, exactly *n* times正好n次                                |
+| *X*`{`*n*`,`}      | *X*, at least *n* times至少n次                               |
+| *X*`{`*n*`,`*m*`}` | *X*, at least *n* but not more than *m* times至少n但不超过m次 |
+
+#### **字符串对象提供了匹配正则表达式规则的API**
+
+```java
+public boolean matches(String regex);
+```
+
+正则在字符串方法中的使用：
+
+```java
+String replaceAll(String regex, String replacement)
+```
+
+替换此字符串中与给定[正则表达式]匹配的每个子字符串
+
+```java
+String[] split(String regex)
+```
+
+围绕给定[正则表达式]的匹配项拆分此字符串,返回一个字符串数组。
+
+#### 正则表达式爬取信息
+
+```java
+String s="dawdwahdawhuiahhhhhhhhq12131321hhhhh321312";
+//1定义爬取规则
+String regex="[0-9]";
+//2编译正则表达式成为一个匹配规则对象
+Pattern p = Pattern.compile(regex);
+//3通过匹配规则对象得到一个匹配数据内容的匹配器对象
+Matcher m = p.matcher(s);
+//4通过匹配器去内容中爬取数据
+while(m.find()){
+    System.out.println(m.group());
+}
+//boolean b = m.matches();
+```
+
+
+
+### 23Arrays类
+
+#### 概述，常用功能
+
+cao数组操作工具类，专门用于操作数组元素的。
+
+常用api：
+
+```java
+static String toString(类型[] a)//返回指定数组内容的字符串表示形式。
+    
+static void sort(类型[] a)//对数组进行排序，默认升序
+   
+//只能比较引用类型
+static <T> void sort(T[] a, Comparator<? super T> c)//根据指定比较器产生的顺序对指定的对象数组进行排序。
+    
+//二分查找，必须排好序在调用。找不到返回复数: -(应存在位置)-1
+static int binarySearch(int[] a, int key)//使用二分查找算法在指定的int数组中搜索指定的值。返回索引。
+```
+
+
+
+#### Arrays类对于Comparator比较器的支持
+
+自定义排序规则
+
+设置**Comparator接口**（是函数式接口，可以简写成Lambda函数）对应的比较器对象，来定制比较规则。
+
+```java
+static <T> void sort(T[] a, Comparator<? super T> c)//根据指定比较器产生的顺序对指定的对象数组进行排序。
+```
+
+排序的时候要实现Comparator接口，用匿名类。实现比较方法，这个方法返回：
+
+如果认为  左边数据 > 右边数据  返回正整数
+
+如果认为  左边数据 < 右边数据  返回负整数
+
+如果认为  左边数据 = 右边数据  返回 0
+
+```
+Double.compare();//比较浮点型，返回-1，1，0
+```
+
+
+
+### 24算法-选择排序 二分查找
+
+
+
+
+
+### 25Lambda表达式
+
+jdk8以后的新语法。
+
+**作用：简化匿名内部类的代码写法。**
+
+**格式：**
+
+```java
+(匿名内部类被重写方法的形参列表) -> {
+	被重写方法的方法体代码。
+}
+```
+
+**注意：**Lambda表达式只能简化**函数式接口**的匿名内部类的写法形式
+
+
+
+#### 函数式接口：
+
+首先必须是**接口**、其次接口中**有且仅有一个抽象方法**的形式。
+
+通常我们会在**接口上加一个@FunctionalInterface注解**，标记该接口必须是**满足函数式接口**。
+
+**常见函数式接口：**
+
+**Comparator比较器，ActionListener时间监听器**
+
+
+
+**Lanbda表达式的省略写法：**（类似js的箭头函数的规则，但是Java里代表匿名内部类）
+
+1参数类型可以不写
+
+2如果只有一个参数，参数类型可以省略，括号也可以省略
+
+3方法体只有一行代码，大括号也可以省略，同时省略分号，此时，如果这行代码是return语句，必须省略return不写，也必须省略分号。
