@@ -2812,3 +2812,462 @@ jdk8以后的新语法。
 2如果只有一个参数，参数类型可以省略，括号也可以省略
 
 3方法体只有一行代码，大括号也可以省略，同时省略分号，此时，如果这行代码是return语句，必须省略return不写，也必须省略分号。
+
+
+
+### 26集合
+
+集合和数组都是容器。
+
+**数组**定义完成后，长度固定，类型确定。
+
+**集合**是java中**存储对象**的一种容器，大小不固定，启动后可以动态变化，类型也不固定，适合做元素增删操作。
+
+
+
+集合类体系结构：
+
+**Collection**单列：（接口）
+
+​		**List：**添加的元素是**有序、可重复、有索引**的。（接口）
+
+​				**ArrayList**：有序、可重复、有索引（实现类）
+
+​				**LinkedList**：有序、可重复、有索引（实现类）
+
+​		**Set：**添加的元素是**无序、不重复、无索引**的。（接口）
+
+​				**HashSet：**无序、不重复、无索引（实现类）
+
+​							**LinkedHashSet**：有序、不重复、无索引（实现类）
+
+​				**TreeSet**：按照大小默认升序排序、不重复、无索引。（实现类）
+
+
+
+**Map**双列：（接口）
+
+
+
+
+
+#### Collection集合常用Api
+
+Collection是单列集合的祖宗接口，它的功能是全部单列集合都可以继承使用的。
+
+```java
+boolean add(E e)//添加元素
+```
+
+```java
+boolean addAll(Collection<? extends E> c)//将指定集合中的所有元素添加到此集合（可选操作）。
+```
+
+```java
+void clear()//清空集合
+```
+
+```java
+boolean contains(Object o)//如果此集合包含指定的元素，则返回“true”。
+```
+
+```java
+boolean containsAll(Collection<?> c)//如果此集合包含指定集合中的所有元素，则返回“true”。
+```
+
+```java
+boolean equals(Object o)//将指定对象与此集合进行相等性比较。
+```
+
+```java
+int hashCode()//返回此集合的哈希代码值。
+```
+
+```java
+boolean isEmpty()//如果此集合不包含元素，则返回“true”。
+```
+
+```java
+Iterator<E> iterator()//返回此集合中元素的迭代器。
+```
+
+```java
+default Stream<E> parallelStream()//返回一个可能并行的“流”，此集合作为其源。
+```
+
+```java
+boolean remove(Object o)//从此集合中删除指定元素的单个实例（如果存在）（可选操作）。
+```
+
+```java
+boolean removeAll(Collection<?> c)//删除此集合中也包含在指定集合中的所有元素（可选操作）。
+```
+
+```java
+default boolean removeIf(Predicate<? super E> filter)//删除此集合中满足给定谓词的所有元素。
+```
+
+```java
+boolean retainAll(Collection<?> c)//仅保留此集合中包含在指定集合中的元素（可选操作）。
+```
+
+```java
+int size()//返回此集合中的元素数。
+```
+
+```java
+default Spliterator<E> spliterator()//在此集合中的元素上创建[`Spliterator`]。
+```
+
+```java
+default Stream<E> stream()//返回以此集合为源的顺序“流”。
+```
+
+```java
+Object[] toArray()//返回包含此集合中所有元素的数组。
+```
+
+```java
+default <T> T[] toArray(IntFunction<T[]> generator)//返回包含此集合中所有元素的数组，使用提供的“generator”函数分配返回的数组。
+```
+
+```java
+<T> T[] toArray(T[] a)//返回包含此集合中所有元素的数组；返回的数组的运行时类型是指定数组的类型。
+```
+
+
+
+#### Collection常用遍历方式
+
+##### 1迭代器遍历-所有集合通用
+
+迭代器Iterator是集合的专用遍历方式。
+
+Collection集合获取迭代器
+
+```JAVA
+Iterator<E> iterator()//返回集合中迭代器对象，该迭代器对象默认指向当前集合的0索引
+```
+
+Iterator中的常用方法：
+
+```java
+boolean hasNext();//如果迭代有更多元素，则返回“true”。
+```
+
+```java
+E next();//返回迭代中的下一个元素。先get()取值，在++指针
+```
+
+##### 2foreach/增强for循环
+
+既可以遍历数组也可以遍历集合。
+
+jdk5之后出现的，内部原理是一个Iterator迭代器，遍历集合相于是迭代器的简化写法。
+
+实现iterable接口的类才可以使用迭代器和增强for，Collection接口已经实现了Iterable接口。
+
+格式：
+
+```java
+for(元素数据类型 变量名：数组或者Collection集合){
+	//在此处使用变量即可，该变量就是元素
+}
+```
+
+##### 3Lambda表达式
+
+Collection结合Lambda遍历的API
+
+```java
+default void forEach(Consumer<? super T> action)//结合lambda遍历集合,内部也有增强for循环，然后回调accept()
+```
+
+```java
+Collection<String> lists = new ArrayList<>;
+lists.forEach(new Consumer<String>()){
+	@override
+	piblic void accept(String s){
+		System.out.println(S);
+	}
+}
+
+lists.forEach(s->System.out.println(s));
+lists.forEach(System.out::println);//简写上行
+```
+
+### 27常见数据结构
+
+**栈**
+
+**队列**
+
+**数组**：查询快，增删慢
+
+**链表：**
+
+​		**单链表：**查询慢、增删快
+
+​		**双链表：**增删首位元素最快，其他不好说
+
+**二叉树：**
+
+​		**二叉查找树（二叉排序树，二叉搜索树）：**左子树的值都小于根节点的值，右子树的值都大于根结点的值。**提高检索数据性能**
+
+​																				 添加节点：小的存左边，大的存右边，一样的不存。**增删改查都挺快。**
+
+​		**平衡二叉树：**在满足查找二叉树的大小规则下，让树尽可能矮小。以此提高查数据的性能。
+
+​							   要求：**任意节点**的左右**两颗子树的高度差不超过1**，任意节点的左右子树都是一颗平衡二叉树。
+
+​							   平衡二叉树添加元素后可能导致不平衡。基本策略是：**左旋，右旋**保证平衡
+
+​		**红黑树：**是一种**自平衡的二叉查找树（**以前被称为二叉平衡B树），**每个节点多存出了一个颜色值，增删改查性能都好**
+
+​						每一个节点可以是红或者黑；红黑树不是通过高度平衡的，而是通过红黑规则来实现。
+
+​						**红黑规则：**每一个节点或是红色的，或者是黑色的**，根节点必须是黑色。**
+
+​											如果一个节点没有子节点或者父节点，则该节点相应的指针属性值为Nil，**这些Nil视为叶节点，叶节点是黑色的**
+
+​											如果某一个节点是红色，那么它的子节点必须是黑色（**不能出现两个红色节点相连的情况**）
+
+​											**对每一个节点，从该节点到其所有后代叶节点的简单路径上，均包含相同数目的黑色节点**
+
+​						**添加节点：**添加的节点的颜色，可以是红色的，也可以是黑色的，但是**默认红色效率高**，添加三个元素一共需要调整一次。
+
+
+
+### 28List系列集合、集合的并发修改异常问题
+
+List系列集合特点：Arraylist，LinekdList：有序可重复，有索引。
+
+List集合特有方法：因为其支持索引，所以多了很多索引操作的独特api。其他collection的功能List也都继承了。
+
+```java
+void add(int index, E element)//在此列表中的指定位置插入指定元素（可选操作）。
+```
+
+```java
+E remove(int index)//删除此列表中指定位置的元素（可选操作）。
+```
+
+```java
+E set(int index, E element)//用指定的元素替换此列表中指定位置的元素（可选操作）。
+```
+
+```java
+E get(int index)//返回此列表中指定位置的元素。
+```
+
+ArrayList底层是**基于数组**实现的，根据索引查询元素快，增删相对慢
+
+LinkedList底层是**基于双链表**实现的，查询元素慢，增删首位元素是非常快的。
+
+#### List集合的遍历方式：
+
+1迭代器Iterator
+
+2增强for循环
+
+3Lambda表达式
+
+4for循环（因为他存在索引）
+
+#### ArrayList底层
+
+是**基于数组**实现的，根据索引查询元素快，增删相对慢。
+
+第一次创建集合并添加第一个元素的时候，在底层创建一个默认长度为10的数组。
+
+用size()记录长度，如果超过了长度，扩容到原来的1.5倍。
+
+#### LinkedList底层
+
+是**基于双链表**实现的，查询元素慢，增删首位元素是非常快的。
+
+所以多了很多首尾操作。
+
+```java
+void addFirst(E e)//push();在此列表的开头插入指定的元素。
+```
+
+```java
+void addLast(E e)//offerLast();将指定的元素追加到此列表的末尾。
+```
+
+```java
+E getFirst()//返回此列表中的第一个元素。
+```
+
+```java
+E getLast()//返回此列表中的最后一个元素。
+```
+
+```java
+E removeFirst()//pop();删除并返回此列表中的第一个元素。
+```
+
+```java
+E removeLast()//删除并返回此列表中的最后一个元素。
+```
+
+LInkedList可以完成队列结构、栈结构（双链表）
+
+
+
+#### 集合的并发修改异常问题(同时遍历且删除元素)
+
+**只有普通for和迭代器可以解决！**
+
+当我们从集合中找出某个元素并删除的时候可能出现一种并发修改异常问题。
+
+**1（可解决）迭代器**遍历集合且使用集合删除元素的时候可能出现。
+
+```java
+List<String> list=new ArrayList();
+Iterator<String> it=list.iterator();
+while(it.hasNext()){
+	String ele=it.next();
+	if("Java".equals(ele)){
+		//list.remove("Java");//此时删除元素会导致指针往前遍历！出错
+		it.remove();//用迭代器删除当前所在元素，并且不会后移指针,会自己i--，成功遍历到所有元素
+	}
+}
+```
+
+**2（不可解决）增强for循环**遍历集合且直接用集合删除元素的时候可能出现。
+
+```java
+List<String> list=new ArrayList();
+Iterator<String> it=list.iterator();
+for(String s : List){
+	if("Java".equals(s)){
+		//list.remove("Java");//此时删除元素会导致指针往前遍历！出错【解决不了】
+	}
+}
+```
+
+**3（不可解决）Lambda表达式**也会出现，底层也是用的foreach
+
+```java
+List<String> list=new ArrayList();
+list.foreach(s->{
+    if("Java".equals(s)){
+		//list.remove("Java");//此时删除元素会导致指针往前遍历！出错【解决不了】
+	}
+})
+```
+
+**4（可解决）普通for循环不会出现**，可以倒着循环或者自行i--
+
+
+
+### **29泛型深入**
+
+#### 泛型的概述和优势
+
+jdk5引入特性，在编译阶段约束操作的数据类型，并进行检查。
+
+只能支持引用数据类型。集合体系所有接口和实现类都支持泛型。
+
+**优势：**统一数据类型，把运行时期的问题提前到了编译期间，避免了强制类型转换可能出现的异常，因为编译阶段类型就确定下来了。
+
+类后面     -> 泛型类（Arraylist）
+
+方法后面 -> 泛型方法
+
+接口后面 -> 泛型接口（Collection）
+
+
+
+#### 自定义泛型类
+
+定义类的同时定义了泛型的类就是泛型类。
+
+泛型类格式：
+
+```java
+修饰符 class 类名<泛型变量>{ }
+public class MyArrayList<T>{ }//此处泛型变量T可以写成任意标识，常见的E,T,K,V
+```
+
+原理：把出现泛型变量的地方全部替换成传输的真实数据类型。
+
+
+
+#### 自定义泛型方法
+
+定义方法的同时定义了泛型的方法就是泛型方法。
+
+泛型方法格式：
+
+```java
+修饰符 <泛型变量> 方法返回值 方法名(形参列表){ }
+public <T> void show(T t){ }//此处泛型变量T可以写成任意标识，常见的E,T,K,V
+```
+
+作用：方法中使用泛型接受一切实际类型的参数，方法更具备通用性。
+
+原理：把出现泛型变量的地方全部替换成传输的真实数据类型。
+
+
+
+#### 自定义泛型接口
+
+使用泛型定义的接口就是泛型接口。
+
+泛型接口的格式：
+
+```java
+修饰符 interface 接口名称<泛型变量>{ }
+public interface Date<T>//此处泛型变量T可以写成任意标识，常见的E,T,K,V
+```
+
+作用：泛型接口可以让**实现类选择当前功能需要操作的数据类型。**
+
+原理：实现类可以在实现接口的时候传入自己操作的数据类型，这样重写的方法都将是针对于该类型的操作。
+
+
+
+#### 泛型通配符、上下限
+
+通配符：?
+
+?可以在 **使用泛型** 的时候代表一切类型。比如在方法参数中使用泛型时
+
+E T K V是在 **定义泛型** 的时候使用的。
+
+虽然BMW BENZ都继承了Car，但是ArrayList<BMW>和ArrayList<BENZ>与ArrayList<Car>**没有关系**。！！
+
+所以需要使用？通配符
+
+例如：
+
+```java
+public static void go(Array<?> cars){
+}
+```
+
+但是通配符会使所有类型都可以，所以加一个泛型上下限！
+
+```java
+?extends Car:
+```
+
+?必须是Car或者其子类 **泛型上限** **用得多**
+
+```java
+? super Car:
+```
+
+?必须是Car或者其父类 **泛型下限**
+
+例如：
+
+```java
+public static void go(Array<? extends Car> cars){
+    
+}
+```
+
