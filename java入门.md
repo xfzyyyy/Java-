@@ -3271,3 +3271,394 @@ public static void go(Array<? extends Car> cars){
 }
 ```
 
+
+
+### 30Set集合
+
+#### **特点：**
+
+无序：顺序不一致(第一次)
+
+不重复：可以去除重复
+
+无索引：没有带索引的方法，所以不能使用普通for循环遍历，也不能使用索引来获取元素。
+
+**Set集合实现类特点：**
+
+HashSet：无序、不重复、无索引
+
+LinkeHashSet：**有序**、不重复、无索引。
+
+TreeSet：**排序（默认升序）、**不重复、无索引
+
+**Set集合的功能上基本与Collection的Api一致。**
+
+
+
+#### HashSet元素无序的底层原理：哈希表
+
+**HashSet底层原理**：
+
+HashSet集合底层采取哈希表存储的数据。
+
+哈希表是一种对于增删改查数据性能都较好的结构。
+
+**哈希表的组成**：
+
+jdk8之前：底层使用数组+链表组成
+
+jdk8开始，底层采用数据+链表+红黑树组成。
+
+**哈希值：**是jdk根据**对象的地址**，按照某种规则算出来的int类型的**数值。**
+
+Object类的Api
+
+```java
+public int hashCode():返回对象的哈希值
+```
+
+**对象的hash值特点**：
+
+同一个对象多次调用hashcode返回的哈希值是相同的
+
+默认情况下，不同对象的哈希值是不同的。
+
+
+
+**HashSet1.7版本原理解析**：**数组+链表+（结合hash算法）**
+
+1，创建一个**默认长度16的数组**，默认加载因为0.75的数组，数组名table
+
+2，根据元素的**hash值跟数组的长度求余**计算出应存入的位置（hash算法）
+
+3，判断当前位**置是否为null**，如果是null直接存入
+
+4，如果位置不为null，表示有元素，则调用**equals方法**比较
+
+5，如果一样，则不存，如果不一样，则存入数组，
+
+​		jdk7新元素占老元素的位置，指向老元素
+
+​		jdk8新元素挂在老元素下面
+
+6.当数组存到16*0.75=12时，会自动扩容，每次扩容为原先的两倍。
+
+结论：hash表是一种对于**增删改查数据性能都较好**的结构。
+
+
+
+**HashSet1.8开始原理解析**：**数组+链表+红黑树**
+
+因为之前那种如果挂在元素下面的数据过多时，查询性能降低，所以jdk1.8开始，**当链表长度超过8的时候，会自动转换为红黑树！**
+
+结论：进一步提高了增删改查性能
+
+
+
+**hashSet判断去重**
+
+是先判断哈希值（地址值转换而来），再判断equals()，所以如果要去重对象的话要**重写hashCode()、equals**()两个值。
+
+
+
+#### LinkedHashSet集合
+
+有序、不重复、无索引
+
+这里的有序：保证存储和取出的元素顺序一致。
+
+原理：底层数据结构依然是**哈希表**、只是每个元素又额外多了一个**双链表的机制记录存储的顺序**。
+
+
+
+#### TreeSet集合
+
+可排序，不重复、无索引
+
+可排序：按照元素的大小默认升序（由小到大）排序！
+
+TreeSet集合底层是基于**红黑树的数据结构**实现排序的，增删改查性能都比较好。
+
+注意：TreeSet集合底层是**一定要排序的，可将元素按照指定的规则进行排序。**
+
+**默认排序规则：**
+
+对于**数值**类型：Integer，Double，官方默认按照**大小**进行升序排序。
+
+对于**字符串**类型：默认按照**首字符的编号**(A65，a97)升序排序。
+
+对于**自定义类型**如Student对象，TreeSet**无法直接排序**。(需要**自己制定排序规则**)
+
+**自己制定排序规则**:
+
+**方式一：**让自定义的类（如学生类）实现Comparable接口重写comparaTo方法来制定比较规则。
+
+当两个值一样，只保留一个
+
+如果想都保留：
+
+```
+public int compareTo(Apple o){
+	return this.weight - o.weight >= 0 ? 1 : -1;
+}
+```
+
+**方式二：**TreeSet集合有参构造器，可以设置Comparator接口对应的比较器对象，来指定比较规则。【常用，可简写->】
+
+```java
+TreeSet(Comparator<? super E> comparator)//构造一个新的空树集，根据指定的比较器排序。
+```
+
+
+
+### 31可变参数 ...
+
+可变参数用在形参中可以接受多个数据。
+
+**可变参数格式：数据类型...参数名称**
+
+**可变参数的作用：**传输参数非常灵活，可以不传参，也可以传一个或多个，还可以传入一个数组。
+
+```java
+public static void sum(int...nums){
+	//可变参数在方法内部本质上就是一个数组	
+}
+```
+
+注意：一个形参列表中可变参数只能有一个；**可变参数必须放在形参列表的最后面。**
+
+
+
+### 32Collections集合工具类
+
+作用：Collections并不属于集合，是用来操作集合的工具类
+
+```java
+static <T> boolean addAll(Collection<? super T> c, T... elements)
+```
+
+将所有指定元素添加到指定集合。
+
+```java
+static void shuffle(List<?> list, Random rnd)
+```
+
+使用指定的随机性源随机排列指定的列表。【打乱List集合元素的排序】//Set本身就是无序，按照自己的规则无序的
+
+
+
+排序方式：
+
+```java
+static <T extends Comparable<? super T>>void sort(List<T> list)
+```
+
+根据[自然排序]将指定列表按升序排序，如果要排序对象，必须实现Comparator接口并重写其比较方法。
+
+```java
+static <T> void sort(List<T> list, Comparator<? super T> c)
+```
+
+根据指定比较器产生的顺序对指定列表进行排序。
+
+
+
+
+
+### 32Map集合
+
+#### Map集合概述和使用
+
+Map集合是一种双列集合，每个元素都包含两个数据。
+
+Map集合的每个元素的格式：key=value（键值对元素）
+
+Map集合也被称为键值对集合
+
+
+
+collection集合的格式：[元素1，元素2，...]
+
+Map集合的格式：{key1=value1, key2=value2,...}
+
+
+
+#### Map集合体系特点
+
+Map**（接口）**
+
+​		HashMap**（实现类）**
+
+​				LinkedHashMap**（实现类）**
+
+​		HashTable**（实现类）**
+
+​				Properties**（实现类）**
+
+​		。。。**（接口）**
+
+​				TreeMap**（实现类）**
+
+使用最对的是HashMap
+
+重点掌握HashMap，LinkedHashMap，TreeMap
+
+Map集合**键无序、不重复、无索引的**，**值可以重复**
+
+Map集合**后面**重复的键对应的值会**覆盖前面**重复键的值。
+
+Map集合键值对都可以为null
+
+
+
+#### Map集合实现类特点
+
+HashMap：元素按照**键是无序**，不重复，无索引，值不做要求。（与Map体系一致）
+
+LinkedHashMap：元素按照**键是有序**，不重复，无索引，值不做要求。
+
+TreeMap：元素按照**键是排序**，不重复，无索引的，值不做要求。
+
+
+
+#### Map集合常用Api
+
+Map集合是双列集合的祖宗接口，它的功能是全部双列集合都可以继承使用的。
+
+```java
+V put(K key, V value)//添加元素，将指定值与此映射中的指定键相关联（可选操作）。
+```
+
+```java
+V remove(Object key)//如果键存在，则从该映射中移除该键的映射（可选操作）。
+```
+
+```java
+default boolean remove(Object key, Object value)//仅当指定键当前映射到指定值时，才删除该项。
+```
+
+```java
+void clear()//从此映射中删除所有映射（可选操作）。
+```
+
+```java
+boolean containsKey(Object key)//如果此映射包含指定键的映射，则返回“true”。
+```
+
+```java
+boolean containsValue(Object value)//如果此映射将一个或多个键映射到指定值，则返回“true”。
+```
+
+```java
+boolean isEmpty()//如果此映射不包含键值映射，则返回true。
+```
+
+```java
+int size()//返回此映射中键值映射的数量。
+```
+
+```java
+Collection<V> values()//返回此映射中包含的值的集合视图。
+```
+
+```java
+Set<K> keySet()//返回此映射中包含的键的Set视图。
+```
+
+```java
+void putAll(Map<? extends K,? extends V> m)//把map2的元素拷贝一份到map1中去
+```
+
+
+
+#### Map集合的遍历方式
+
+##### 键找值：
+
+先获取Map集合的全部键的Set集合。**KeySet()**方法
+
+遍历键的Set集合，然后通过提取对应值。**get()**方法
+
+
+
+##### 键值对：
+
+先把Map集合转换成Set集合，Set集合中每个元素都是键值对实体类型了。**entrySet()**
+
+```java
+Set<Map.Entry<K,V>> entrySet()//返回此映射中包含的映射的Set视图。
+```
+
+遍历Set集合，然后提取键以及提取值。**getKey(), getValue();**
+
+**原因**：使用foreach遍历map集合，发现Map集合的键值对元素是没有类型的，所以不可以直接foreach遍历map集合。
+
+通过调用Map的方法entrySet把Map集合转换成Set集合形式。
+
+```java
+Set<Map.Entry<String,Integer>> entries = [(手表,10),(手机,20),(电视,89)]
+```
+
+此时就可以用foreach了。
+
+
+
+##### lambda表达式：
+
+Map结合Lambda遍历的API，内部也是使用entrySet()
+
+```java
+default void forEach(BiConsumer<? super K,? super V> action)//遍历Map集合，为此映射中的每个条目执行给定的操作，直到处理完所有条目或该操作引发异常。
+```
+
+```java
+maps.forEach((k,v)->{
+	System.out.println(k+"->"+v);
+})
+```
+
+
+
+### 33 Map集合的实现类
+
+#### HashMap
+
+直接使用Map的方法就好
+
+**HashMap和HashSet底层原理是一模一样**的，都是Hash表结构，只是HashMap的每个元素包含两个值
+
+Set系列集合底层就是Map，只是Set集合中元素只要键数据，不要值数据而已。
+
+HashMap底层是哈希表结构，依赖hashCode和equals方法保证键的唯一。
+
+如果键是存的自定义对象，需要重写hashCode和equals方法。
+
+基于哈希表增删改查都挺好
+
+
+
+#### LinkedHashMap
+
+原理：底层数据结构依然是哈希表，只是对每个键值对元素又额外的多了一个**双链表的机制**记录存储的顺序。
+
+
+
+#### TreeMap
+
+按照键排序；
+
+TreeMap一定要排序的，可以默认排序，也可以按照指定规则排序。
+
+**TreeMap和TreeSet一样底层原理是一样的**
+
+
+
+自定义排序规则有两种：
+
+类实现Comparable接口，重写比较规则。
+
+集合自定义Comparator比较器对象，重写比较规则。
+
+
+
+### 34不可变
