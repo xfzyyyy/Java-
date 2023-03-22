@@ -3661,4 +3661,356 @@ TreeMap一定要排序的，可以默认排序，也可以按照指定规则排�
 
 
 
-### 34不可变
+### 34不可变集合
+
+不可变集合：不可被修改的集合
+
+集合数据项在创建时提供，**并且在整个生命周期中都不可改变**。否则报错。
+
+如果某个数据不能被修改，把他防御性拷贝到不可变集合中是个很好的实践。
+
+或者当集合对象被不可信的库调用时，不可变形式是安全的
+
+在List、Set、Map接口中，都存在of方法，可以创建一个不可变的集合。
+
+```java
+static <E> List<E> of(E... elements);//创建一个具有指定元素的List集合，返回包含任意数量元素的【不可修改列表。】
+static <E> Set<E> of(E... elements);//创建一个具有指定元素的Set集合，返回包含任意数量元素的【不可修改集合。】
+static <K,V> Map<K,V> of(E... elements);//创建一个具有指定元素的Map集合，返回包含任意数量元素的【不可修改映射。】
+```
+
+```java
+List<Double> lists = list.of(569.5,434,557);
+```
+
+
+
+### 35Stream流
+
+在java8中，得益于Lambda所带来的函数式编程，引入了一个全新的stream流概念。
+
+**目的：简化集合和数组操作的API**
+
+eg:
+
+```java
+names.stream().filter(s->s.startWith("张")&&s->s.length()==3).forEach(s->System.out.println(s));
+```
+
+Stream流的三类方法：
+
+**获取stream流**：
+
+创建一条流水线，并把数据放到流水线上准备进行操作。
+
+**中间方法**：
+
+流水线上的操作
+
+**终结方法：**
+
+一个Stream流只有一个终结方法，是流水线上的最后一个操作。
+
+
+
+**获取stream流**：
+
+集合：
+
+```java
+default Stream<E> stream()//返回以该集合为源的连续“流”。
+```
+
+arraylist:
+
+```java
+Collection<String> list=new ArrayList<>();
+Stream<String> s=list.stream();
+```
+
+map:
+
+```java
+Map<String,Integer> maps= new HashMap<>();
+//键流
+Stream<String> keyStream=maps.keySet().stream();
+//值流
+Stream<Integer> valueStream=maps.values().stream();
+//键值对流
+Stream<Map.Entry<String,Integer>> keyAndValueStream=maps.entrySet().stream();
+```
+
+数组：
+
+```java
+static <T> Stream<T> stream(T[] array)//返回一个以指定数组为源的连续Stream。
+```
+
+```java
+static <T> Stream<T> stream(T[] array, int startInclusive, int endExclusive)//返回以指定数组的指定范围为源的连续Stream。
+```
+
+```java
+static <T> Stream<T> of(T... values)//获取当前数组的Stream，可变数据的Stream
+```
+
+ eg:
+
+```java
+String[] names={"ac","sa","sas"};
+Stream<String> nameStream =Arrays.stream(names);
+
+Stream<String> nameStream2=Stream.of(names)
+```
+
+
+
+**中间方法：**（非终结方法，调用完返回新的stream流方法可以继续使用，支持链式编程，不会改变原来集合、数组的数据）
+
+```java
+Stream<T> limit(long maxSize)//获取前几个元素
+```
+
+```java
+<R> Stream<R> map(Function<? super T,? extends R> mapper)//返回一个流，该流由将给定函数应用到此流的元素的结果组成。
+```
+
+```java
+Stream<T> skip(long n)//跳过前几个元素
+```
+
+```java
+Stream<T> distinct()//去除流中重复的元素，依赖（hashcode和equals方法）
+```
+
+```java
+static <T> Stream<T> concat(Stream<? extends T> a, Stream<? extends T> b)//合并ab两个流为一个流
+```
+
+```java
+Stream<T> filter(Predicate<? super T> predicate)//用于过滤流中的数据
+```
+
+
+
+**终结方法：（ 不会返回stream流了）**
+
+```java
+long count()//返回此流中的元素数
+```
+
+```java
+void forEach(Consumer<? super T> action)//对流每个元素遍历操作
+```
+
+
+
+#### stream的收集操作
+
+把Stream流操作后的结果数据转回到集合或者数组中去。
+
+stream流：方便操作集合、数组的手段。
+
+集合、数组：才是开发中的目的。
+
+**流只能收集一次。**
+
+```java
+List<String> mylist=s1.collect(Collectors.toList());
+//有直接的toList()方法，但是是转换成了不可变集合
+```
+
+```java
+Set<String> mylist=s1.collect(Collectors.toSet());
+```
+
+收到数组中：
+
+```java
+Object[] arrs= s3.toArray();
+//如果要指定数组类型
+String[] arrs=s3.toArray(s->new String[s])
+```
+
+
+
+### 36异常
+
+是在执行和编译过程中可能出现的问题，注意：语法错误不算。
+
+比如数组索引越界，空指针异常，日期格式化异常。
+
+
+
+#### 异常体系：
+
+**Throwable:**
+
+
+
+​		**Error：**系统级别问题，jvm退出等，代码无法控制。
+
+
+
+​		**Exception：**java.lang包下，称为异常类，他表示程序本身可以处理的问题。
+
+
+
+​				**RuntimeException及其子类**：**运行时异常**（运行字节码文件  ），编译阶段不会报错。（空指针，数组索引越界）
+
+
+
+​				**除RuntimeException之外的所有异常**：**编译时异常**（编译成class文件时），编译器必须处理，否则程序不能通过编译。（日期格式化异常）
+
+
+
+#### 默认异常处理机制：（并不好，程序死亡）
+
+默认会在出现异常的代码那里自动的创建一个异常对象：ArithmeticException。
+
+异常会从方法中出现的点这里抛出给调用者，调用者最终会抛出给JVM虚拟机
+
+虚拟机收到异常对象后，先在控制台直接输出异常栈信息数据。
+
+直接从当前执行的异常点干掉当前程序。
+
+后续代码没有执行机会了，程序已经死亡。
+
+
+
+#### 编译时异常处理机制
+
+处理形式有三种
+
+1.**出现异常直接抛出给调用者，调用者也抛出去**。
+
+
+
+**throws：**用在方法上，可以将方法内部出现的异常抛出去给本方法的调用者处理。
+
+（并不好，发生异常的方法自己不处理异常，如果出现异常最终抛出去给虚拟机将引起程序死亡。）
+
+格式：
+
+```java
+方法 throws 异常一,异常二,异常三..{
+
+}
+```
+
+规范做法：
+
+```java
+方法 throws Exception{
+
+}
+```
+
+
+
+**2.出现异常自己捕获处理，不麻烦别人。**
+
+
+
+**try...catch...**
+
+监视捕获异常，用在方法内部，可以将方法内部出现的异常直接捕获处理。
+
+（还可以，发生异常的方法自己独立完成异常的处理，程序可以继续往下执行。）
+
+格式：
+
+```java
+try{
+//监视可能出现异常的代码
+}catch(异常类型1 变量){
+//处理异常
+}catch(异常类型2 变量){
+//处理异常
+}
+```
+
+建议格式：
+
+```java
+try{
+//监视可能出现异常的代码
+}catch(Exception e){
+  e.printStackTrace();
+}
+Exception可以捕获处理一切异常类型
+```
+
+
+
+**3.前两者结合，出现异常直接抛出给调用者，调用者捕获处理。**
+
+方法直接将异常throws抛出去给调用者。
+
+调用者收到异常后直接捕获处理。
+
+（按照开发规范来说是最好的方式，底层的跑出去给外层，最外层集中捕获处理，实际上每一种抛出异常方法都行。）
+
+
+
+#### 运行时异常处理机制
+
+在最外层集中处理捕获，底层不需要我们throws，会自动抛出异常的。
+
+
+
+#### 自定义异常
+
+如果企业要通过异常的方式来管理自己的某个业务问题，就需要自定义异常类了。
+
+
+
+好处：使用异常机制管理，清晰指出错误。
+
+
+
+##### **1自定义编译时异常**
+
+a定义一个异常类继承Exception
+
+b重写构造器
+
+c在出现异常的地方用throw new自定义对象抛出。
+
+（编译时异常是编译阶段就报错，提醒更加强烈，一定需要处理）
+
+throw：在方法内部直接创建一个异常对象，并从此点抛出；
+
+throws：用在方法申明上，抛出方法内部的异常
+
+##### 2自定义运行时异常
+
+a定义一个异常类继承RuntimeException
+
+b重写构造器
+
+c在出现异常的地方用throw new自定义对象抛出。
+
+（运行时异常是编译阶段不报错，运行时才可能出现）
+
+
+
+### 37日志框架
+
+记录程序运行的信息，并可以永久存储。
+
+可以将系统执行的信息选择性记录到指定的位置
+
+可以随时以开关形式控制是否记录日志，无需修改源代码。
+
+#### Logback日志框架
+
+https://logback.qos.ch/index.html
+
+主要分为三个技术模块：
+
+logback-core：为其它两个模块奠定了基础，必须有
+
+logback-classic：是log4j的一个改良版本，同时完整实现了slf4jApi
+
+logback-access模块与Tomcat和jetty等servlet容器集成，以提供http访问日志功能
