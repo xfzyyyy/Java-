@@ -3912,7 +3912,7 @@ String[] arrs=s3.toArray(s->new String[s])
 
 
 
-**try...catch...**
+**try...catch...finally**
 
 监视捕获异常，用在方法内部，可以将方法内部出现的异常直接捕获处理。
 
@@ -3937,6 +3937,8 @@ try{
 //监视可能出现异常的代码
 }catch(Exception e){
   e.printStackTrace();
+}finally{
+    //即使前面return了这里也会执行，所以不要在这里return，会覆盖前面的return。除非前面exit(0)终止jvm
 }
 Exception可以捕获处理一切异常类型
 ```
@@ -4014,3 +4016,1581 @@ logback-core：为其它两个模块奠定了基础，必须有
 logback-classic：是log4j的一个改良版本，同时完整实现了slf4jApi
 
 logback-access模块与Tomcat和jetty等servlet容器集成，以提供http访问日志功能
+
+
+
+```java
+public class Test {
+//    1将项目文件下新建lib，导入logback相关jar包，并添加到依赖库中去
+//    2将logback的核心配置文件logback.xml直接拷贝到src目录下（必须是src下）
+//    3在代码中获取日志的对象
+//    4使用日志对象输出日志信息
+    
+    //创建logback日志对象，代表了日志技术
+    public static final Logger LOGGER= LoggerFactory.getLogger(Test.class);
+    public static void main(String[] args) {
+        try{
+            LOGGER.debug("main开始");
+            LOGGER.info("第二行");
+            int a =10;
+            int b=0;
+            LOGGER.trace("a="+a);
+            System.out.println(a / b);
+        }catch(Exception e){
+            e.printStackTrace();
+            LOGGER.error("出现异常"+e);
+        }
+
+    }
+}
+```
+
+
+
+logback日志系统的特性都是通过核心配置文件logback.xml控制的。
+
+**logback日志输出位置、格式设置：**
+
+通过logback.xml中的<append>标签可以设置**输出位置和日志信息的详细格式**。
+
+通常可以设置2个日志输出位置：一个是控制台，一个是系统文件中
+
+
+
+日志级别：
+
+控制系统中那些日志级别是可以输出的，TRACE<DEBUG< INFO< WARN< ERROR，默认级别是Debug**，只输出不低于当前级别的日志。**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!--
+        CONSOLE ：表示当前的日志信息是可以输出到控制台的。
+    -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <!--输出流对象 默认 System.out 改为 System.err-->
+        <target>System.out</target>
+        <encoder>
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度
+                %msg：日志消息，%n是换行符-->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level]  %c [%thread] : %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File是输出的方向通向文件的 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>utf-8</charset>
+        </encoder>
+        <!--日志输出路径-->
+        <file>C:/Users/方前林/Desktop/java基础学习/itheima-data.log</file>
+        <!--指定日志文件拆分和压缩规则-->
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--通过指定压缩文件名称，来确定分割文件方式-->
+            <fileNamePattern>C:/Users/方前林/Desktop/java基础学习/fql-data2-%d{yyyy-MMdd}.log%i.gz</fileNamePattern>
+            <!--文件拆分大小-->
+            <maxFileSize>1MB</maxFileSize>
+        </rollingPolicy>
+    </appender>
+
+    <!--
+
+    level:用来设置打印级别，大小写无关：TRACE, DEBUG, INFO, WARN, ERROR, ALL 和 OFF
+   ， 默认debug
+    <root>可以包含零个或多个<appender-ref>元素，标识这个输出位置将会被本日志级别控制。
+    -->
+    <root level="ALL">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE" />
+    </root>
+</configuration>
+```
+
+
+
+### 38文件操作
+
+#### File概述
+
+File类可以定位文件：进行删除、获取文本本身信息等操作。但是不能读写文件内容。
+
+IO流技术可以对硬盘中的文件进行读写。
+
+
+
+File类创建对象
+
+```java
+File(File parent, String child)//根据父路径对应文件对象和子路径名字字符串创建文件对象
+```
+
+```java
+File(String pathname)//根据文件路径创建文件对象
+```
+
+```java
+File(String parent, String child)//跟据父路径名字字符串和子路径名字符串创建文件对象
+```
+
+```java
+File(URI uri)//通过将给定的File:URI转换为抽象路径名来创建一个新的File实例。
+```
+
+
+
+```java
+File f= new file("C:\\data.jpg");
+long size=f.length();//是文件的字节大小
+system.out.println(size);
+```
+
+File对象可以**定位文件和文件夹**
+
+File封装好的对象仅仅是一个**路径名**，这个路径是可以存在的，也可以是不存在的。
+
+
+
+绝对路径
+
+相对路径：默认到当前工程下的目录寻找文件
+
+```java
+File file3 = new File("模块名\\a.txt")
+```
+
+
+
+#### File类的常用Api
+
+https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html#method-summary
+
+**判断文件类型**
+
+```java
+boolean isDirectory()//判断是否为文件夹
+```
+
+```java
+boolean isFile()//是否为文件
+```
+
+```java
+boolean exists()//判断file是否存在
+```
+
+**获取文件信息**
+
+```java
+String getAbsolutePath()//返回绝对路径字符串
+```
+
+```java
+String getPath()//将此抽象路径名转换为路径名字字符串
+```
+
+```java
+String getName()//返回由此抽象路径名表示的文件或文件夹的名称
+```
+
+```java
+long lastModified()//返回文件最后修改的时间毫秒值
+```
+
+**创建文件**
+
+```java
+boolean mkdir()//只能创建一级文件夹
+```
+
+```java
+boolean mkdirs()//可以创建多级文件夹
+```
+
+```java
+boolean createNewFile()//创建一个新的空文件
+```
+
+**删除文件功能**
+
+```java
+boolean delete()//删除由此抽象路径名表示的文件或空文件夹
+```
+
+```java
+void deleteOnExit()//请求在虚拟机终止时删除此抽象路径名表示的文件或目录。
+```
+
+delete方法直接删除不走回收站；如果删除的是文件，文件被占用也可以删除。
+
+delete方法默认只能删除空文件夹。
+
+**遍历文件夹**
+
+```java
+String[] list()//获取当前目录下所有的“一级文件名称”到一个字符串数组中去返回。
+```
+
+```java
+File[] listFiles()//获取当前目录下所有的“一级文件对象”到一个文件对象数组中去返回。【常用】
+```
+
+listFiles注意：
+
+当调用者不存在时，返回null
+
+当调用者是一个文件时，返回null
+
+当调用者是一个空文件夹时，返回一个长度为0的数组
+
+当调用者是一个有内容的文件夹时，将里面所有文件和文件夹的路径放在File数组中返回。
+
+当调用者是一个有隐藏文件的文件夹时，将里面所有文件和文件夹的路径放在file数组中返回，包含隐藏内容
+
+当调用者是一个需要权限才能进入的文件夹时，返回null
+
+
+
+### 39IO流
+
+#### 字符集
+
+英文和数字在任何字符集都占一个字节
+
+gbk字符中一个中文占2字节
+
+utf-8一个中文占3字节
+
+编码前的字符集和编码后字符集必须一致，否则会出现字符乱码。
+
+英文和数字在任何字符集都不会乱码
+
+#### String解码
+
+字节转换成文字
+
+构造器
+
+```java
+String(byte[] bytes)//通过使用平台的默认字符集解码指定的字节数组来构造新的String
+```
+
+```java
+String(byte[] bytes, String charsetName)//通过指定的字符集解码指定的字节数组来构造新的String
+```
+
+#### String编码
+
+把文字转换成字节
+
+方法
+
+```java
+byte[] getBytes()//使用默认字符集将该String编码为一系列字节，将结果存储到新的字节数组中
+```
+
+```java
+byte[] getBytes(String charsetName)//使用指定字符集将该String编码为一系列字节，将结果存储到新的字节数组中
+```
+
+#### IO流
+
+也称为输入输出流，就是用来读写数据的。
+
+I：表示input，是数据从硬盘文件**读入到内存**的过程，称之输入，负责读。
+
+O：表示output，是内存程序的数据**从内存到写出**到硬盘文件的过程，称之输出，负责写。
+
+按流中数据最小单位分：
+
+字节流：操作所有类型文件，例如音视频
+
+字符流：操作纯文本文件，例如文本
+
+#### 四大流：(抽象类:实现类)
+
+字节输入流：以内存为基准，来自磁盘、网络的数据以字节形式读入到内存中去。**InputStream**：FileInputStream
+
+字节输出流：以内存为基准，内存的数据以字节形式写出到磁盘、网络中去。**OutputStream**:FileOutputStream
+
+字符输入流：以内存为基准，来自磁盘、网络的数据以字符形式读入到内存中去。**Reader**:FileReader
+
+字符输出流：以内存为基准，内存的数据以字符形式写出到磁盘、网络中去。**Writer**:FileWriter
+
+
+
+#### FileInputStream
+
+```java
+FileInputStream(File file)//通过打开与实际文件的连接来创建“FileInputStream”，该文件由文件系统中的“file”对象“file”命名
+```
+
+```java
+FileInputStream(FileDescriptor fdObj)//使用文件描述符“fdObj”创建“FileInputStream”，该描述符表示与文件系统中实际文件的现有连接。
+```
+
+```java
+FileInputStream(String name)//创建字节输入流管道与原文件路径接通
+```
+
+```java
+int read()//每次读取一个字节返回，如果字节已经没有可读的返回-1
+```
+
+```java
+int read(byte[] b)//每次读取一个字节数组返回，如果字节已经没有可读的返回-1
+```
+
+这种读取容易造成乱码，建议一次性读完所有字节：readAllBytes()，但是文件过大定义的字节数组可能会出现内存溢出。
+
+#### FileOutputStream
+
+```java
+FileOutputStream(File file)//创建字节输出流管道与源文件对象接通，每次重新创建会清空
+```
+
+```java
+FileOutputStream(File file, boolean append)//创建字节输出流管道与源文件对象接通，可追加数据
+```
+
+```java
+FileOutputStream(String name)//创建字节输出流管道与源文件路径接通
+```
+
+```java
+FileOutputStream(String name, boolean append)////创建字节输出流管道与源文件路径接通，可追加数据
+```
+
+```java
+void write(byte[] b)//写一个字节数组出去
+```
+
+```java
+void write(byte[] b, int off, int len)//写一个字节数组出去的一部分出去
+```
+
+```java
+void write(int b)//写一个字节出去
+```
+
+**流的关闭与刷新**
+
+flush()刷新流，还可以继续写数据
+
+close()关闭流，释放资源，但是在关闭之前会先刷新流。一旦关闭就不能再写数据
+
+**案例：拷贝文件**:
+
+1根据数据源创建字节输入流对象
+
+2根据目的地创建字节输出流对象
+
+3读写数据，复制视频
+
+4释放资源
+
+```java
+package com.xfzy.filecopy;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+public class Copydemo {
+    public static void main(String[] args) {
+        InputStream is=null;
+        OutputStream os=null;
+        try{
+            //1根据数据源创建字节输入流对象
+            is =new FileInputStream("C:\\Users\\方前林\\Desktop\\java基础学习\\code\\javasepromax\\filecopy\\家庭情况证明.jpg");
+            //2根据目的地创建字节输出流对象
+            os =new FileOutputStream("C:\\Users\\方前林\\Desktop\\java基础学习\\new.jpg");
+            //3读写数据，复制视频
+            byte[] buffer = new byte[1024];
+            int len;//记录每次的字节数
+            while((len=is.read(buffer))!=-1){
+                os.write(buffer,0,len);
+            }
+            System.out.println("复制完成");
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }finally{
+            //4关闭流释放资源
+            try {
+                if(os!=null) os.close();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            try {
+                if(is!=null) is.close();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+**字节流适合做一切文件数据拷贝。但不适合中文输出**
+
+#### 简化资源释放操作
+
+```java
+try{
+//监视可能出现异常的代码
+}catch(Exception e){
+  e.printStackTrace();
+}finally{
+	//执行所有资源释放操作
+    //即使前面return了这里也会执行，所以不要在这里return，会覆盖前面的return。除非前面exit(0)终止jvm
+}
+```
+
+###### jdk7:
+
+```java
+try(定义流对象){
+//监视可能出现异常的代码
+}catch(Exception e){
+}
+```
+
+资源用完最终自动释放。
+
+```java
+package com.xfzy.filecopy;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+public class Copydemo {
+    public static void main(String[] args) {
+        //1根据数据源创建字节输入流对象
+        //2根据目的地创建字节输出流对象
+        try(InputStream is =new FileInputStream("C:\\Users\\方前林\\Desktop\\java基础学习\\code\\javasepromax\\filecopy\\家庭情况证明.jpg");
+            OutputStream os =new FileOutputStream("C:\\Users\\方前林\\Desktop\\java基础学习\\new.jpg");
+            ){
+            //3读写数据，复制视频
+            byte[] buffer = new byte[1024];
+            int len;//记录每次的字节数
+            while((len=is.read(buffer))!=-1){
+                os.write(buffer,0,len);
+            }
+            System.out.println("复制完成");
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+}
+
+```
+
+###### jdk9:不建议使用
+
+```java
+定义输入流对象;
+定义输出流对象;
+try(输入流对象，输出流对象){
+//监视可能出现异常的代码
+}catch(Exception e){
+}
+```
+
+资源用完最终自动释放。
+
+###### 资源用完最终自动释放的原因
+
+实现了AutoCloseable接口
+
+
+
+#### FileReader
+
+字符输入流，每次读取一个字符时，如果代码和文件编码一致，则不会出现乱码。
+
+构造器:
+
+```java
+public FileReader(File file);//创建字符输入流管道与源文件对象接通
+```
+
+```java
+public FileReader(String pathname);//创建字符输入流管道与源文件路径接通
+```
+
+方法：读取字符
+
+```java
+public int read()//每次读取一个字符返回，如果字符已经没有可读的返回-1
+```
+
+```java
+public int read(char[] buffer)//每次读取一个字符数组返回，返回读取字符个数，如果字符已经没有可读的返回-1
+```
+
+
+
+#### FileWriter
+
+构造器：
+
+```java
+public FilWriter(File file);//创建字符输出流管道与源文件对象接通
+```
+
+```java
+public FilWriter(File file,boolean append);//创建字符输出流管道与源文件对象接通,可追加
+```
+
+```java
+public FilWriter(String filepath);//创建字符输出流管道与源文件路径接通
+```
+
+```java
+public FilWriter(String filepath,boolean append);//创建字符输出流管道与源文件路径接通,可追加
+```
+
+方法：
+
+```java
+void write();//可以写字符，字符数组，字符数组的一部分，字符串，字符串的一部分
+```
+
+
+
+### 40、IO流（二）
+
+#### 缓冲流
+
+缓冲流也称为高级流，高效流。之前字节流称为原始流。
+
+**作用：缓冲流自带缓冲区、可以提高原始字节流、字符流读写数据的性能。**
+
+字节缓冲流优化原理：
+
+字节缓冲输入流自带了8kb缓冲池，以后我们可以直接从缓冲池读取数据，所以性能好。
+
+字节缓冲输出流自带了8kb缓冲池，数据就直接写入到缓冲池中去，写数据性能级高了。
+
+功能没有太大变化，都是继承的字节输入流InputStream，OutputStream
+
+
+
+##### BufferedInputStream字节缓冲输入流
+
+构造器
+
+```java
+BufferedInputStream(InputStream in)//把低级的字节输入流包装成一个高级的缓冲字节输入流管道，从而提高字节输入流读数据的性能
+```
+
+```java
+BufferedInputStream(InputStream in, int size)//创建一个具有指定缓冲区大小的BufferedInputStream，并将其参数输入流保存在中，以备日后使用。
+```
+
+
+
+##### BufferedOutputStream字节缓冲输出流
+
+```java
+BufferedOutputStream(OutputStream os)//把低级的字节输出流包装成一个高级的缓冲字节输出流管道，从而提高写数据的性能
+```
+
+
+
+##### BufferedReader字符缓冲输入流
+
+提高字符输入流读取数据的性能，除此之外多了**按照行读取数据**的功能。
+
+构造器：
+
+```java
+BufferedReader(Reader in)//可以把低级的字符输入流包装成一个高级的缓冲字符输入流管道，从而提高字符输入流读数据的性能
+```
+
+新增功能：
+
+```java
+String readLine()//读取一行数据返回，如果读取没有完毕，无行可读返回null
+```
+
+
+
+##### BufferedWriter字符缓冲输出流
+
+构造器：
+
+```java
+BufferedWriter(Writer out)//可以把低级的字符输出流包装成一个高级的缓冲字符输出流管道，从而提高字符输出流写数据性能
+```
+
+新增方法：
+
+```java
+public void newLine()//换行操作
+```
+
+
+
+#### 转换流
+
+字符流直接读取文本时，如果代码编码和读取的文件编码不一致，会出现乱码。
+
+解决：**使用字符输入转换流:**
+
+可以**提取文件gbk的原始字节流**，原始字节不会存在问题。
+
+然后把**字节流以指定编码转换成字符输入流**，这样字符输入流中的字符就不乱码了
+
+
+
+##### InputStreamReader：字符输入转换流
+
+把原始字节流按照指定编码转换成字符输入流。
+
+构造器：
+
+```java
+InputStreamReader(InputStream in, String charsetName)//把原始字节流转换成字符输入流
+```
+
+
+
+##### OutputStreamWrite：字符输出转换流
+
+需要控制写出去的字符使用的编码：
+
+把字符以指定编码获取字节后再使用字节输出流写出去："我爱你中国".getBytes(编码)
+
+也可以使用字符输出转换流实现。
+
+构造器：
+
+```java
+OutputStreamWriter(OutputStream out, String charsetName)//指定编码把字节输出流转换成字符输出流，从而可以指定写出取得字符编码。
+```
+
+#### 序列化对象
+
+以内存为基准，把**内存中的对象存储到磁盘文件中去**，称为**对象序列化**。
+
+使用的流是**对象字节输出流**：ObjectOutputStream
+
+构造器
+
+```java
+ObjectOutputStream(OutputStream out)//把低级字节输出流包装成高级的对象字节输出流。
+```
+
+方法：
+
+```java
+final void writeObject(Object obj)//把对象写出去到对象序列化流的文件中去
+```
+
+**对象如果要序列化:必须先实现Serializable序列化接口。**
+
+1创建对象
+
+2对象序列化：使用对象字节输出流包装字节输出流管道。
+
+3直接调用序列化方法，weriteObject(类)
+
+4释放资源close
+
+
+
+以内存为基准，把**存储到磁盘文件中去的对象数据恢复成内存中的对象**，称为**对象反序列化**
+
+使用的是**对象字节输入流**：ObjectInputStream
+
+构造器：
+
+```java
+ObjectInputStream(InputStream in)//把低级字节输入流包装成高级的对象字节输入流
+```
+
+方法：
+
+```java
+final Object readObject()//把存储到磁盘文件中的对象数据恢复成内存中的对象返回
+```
+
+
+
+##### 敏感字段不参与序列化-transient：
+
+注意：如果有成员变量不参与序列化，例如密码，可以在成员变量之前加上修饰符**transient**
+
+##### 版本号:
+
+申明序列化版本号，序列化版本号与反序列版本号必须一致才不会出错。
+
+```java
+private static final long serialVersionUID=1;
+```
+
+
+
+#### 打印流
+
+可以实现方便高效的打印数据到文件中去，打印流一般是指：PrintStream，PrintWrite两个类。
+
+可以实现打印什么就是什么。
+
+##### PrintStream字节输出流
+
+构造器：
+
+```java
+PrintStream(OutputStream out)//打印流直接通向字节输出流管道
+```
+
+```java
+PrintStream(File file)//打印流直接通向文件对象
+```
+
+```java
+PrintStream(String fileName)//打印流直接通向文件路径
+```
+
+方法：
+
+```java
+void print()
+void println()
+```
+
+##### PrintWriter字符输出流
+
+构造器：
+
+```java
+PrintWriter(OutputStream out)//打印流直接通向字节输出流管道
+PrintWriter(Writer out)//打印流直接通向字符输出流管道
+```
+
+```java
+PrintWriter(File file)//打印流直接通向文件对象
+```
+
+```java
+PrintWriter(String fileName)//打印流直接通向文件路径
+```
+
+方法：
+
+```java
+void print()
+void println()
+```
+
+##### 
+
+**如果要追加数据，必须使用低级管道的构造器。**
+
+
+
+##### 他俩区别：
+
+打印上没有区别，都是使用方便
+
+**PrintStream继承自字节输出流OutputStream**，支持写字节数据的方法
+
+**PrintWriter继承自字符输出流Writer**，支持写字符数据出去。
+
+
+
+##### 输出语句重定向：
+
+属于打印流的一种应用，可以把**输出语句的打印位置改到文件。**
+
+```java
+PrintStream = new PrintStream("文件地址")
+System.setOut(ps)//把系统打印流改成我们自己的打印流
+```
+
+
+
+#### Properties属性集对象
+
+其实就是一个map集合，但是我们一般不会当集合使用，因为HashMap更好用。
+
+
+
+**properties核心作用**：
+
+代表的是一个属性文件，可以把自己对象中的键值对信息存储到一个属性文件中去。
+
+属性文件：后缀是**.properties结尾**的文件，**里面内容都是key=value，后续做系统配置信息的**。
+
+
+
+Peoperties结合IO流的方法：
+
+```java
+void load(InputStream inStream)//从输入字节流读取属性列表（键和元素对）
+```
+
+```java
+void load(Reader reader)//从输入字符流读取属性列表（键和元素对）
+```
+
+```java
+void store(OutputStream out, String comments)//将此属性列表（键和元素对）写入此Properties表中，以适合用load(InputStream)方法的格式写入输出字符流
+```
+
+```java
+void store(Writer writer, String comments)//将此属性列表（键和元素对）写入此Properties表中，以适合用load(reader)方法的格式写入输出字符流
+```
+
+```java
+Object setProperty(String key, String value)//保存键值对（put）
+```
+
+```java
+String getProperty(String key)//使用此属性列表中指定的键搜索属性值
+```
+
+```java
+Set<String> stringPropertyNames()//所有键的名称合集
+```
+
+
+
+#### IO框架 commons-io
+
+第三方工具包，提供了很多有关io操作的类，有两个主要的类FileUtils，IOUtils
+
+**导入commins-io-2.6.jar**
+
+1在项目中创建一个文件夹lib
+
+2将jar文件复制到lib
+
+3在jar文件右键Add as Library->OK
+
+4在类中导包使用
+
+##### FileUtils
+
+方法：
+
+```java
+String readFileToString(File file,String encoding)//读取文件数据，返回字符串
+void copyFile(File src,File dest)//复制文件
+void copyDirectoryToDirectory(File src,File dest)//复制文件夹
+```
+
+
+
+##### NIO : public final class **Files**
+
+java1.7开始自己也做了相关类api
+
+https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Files.html#method-summary
+
+
+
+### 41线程
+
+线程thread是一个程序内部的一条执行路径。
+
+我们之前启动程序执行后，main方法的执行其实就是一条单独的执行路径。
+
+程序中如果只有一条执行路径，那么这个程序就是**单线程**的程序。
+
+**多线程**：是从**软硬件上实现多条执行流程**的技术。
+
+
+
+#### 多线程的创建
+
+##### 一、继承Thread类
+
+1定义一个子类MyThread继承线程类Java.lang.Thread，重写run()方法
+
+2创建MyThread类的对象
+
+3调用线程对象的start()方法启动线程（启动后还是执行run方法的）
+
+```java
+package com.xfzy.d1_creat;
+
+public class ThreadDemo01 {
+    public static void main(String[] args) {
+        //3 new一个新线程对象
+        Thread t =new MyThread();
+        //4 调用start方法启动线程（执行的还是run）
+        t.start();//告诉操作系统以线程方式启动run方法，直接run会认为是普通方法。
+        for(int i=0;i<5;i++){
+            System.out.println("主线程执行输出"+i);
+        }
+    }
+}
+
+/**
+ * 1 定义一个线程类继承Thread类
+ */
+class MyThread extends Thread{
+    /**
+     * 2 重写run方法，里面是定义线程以后要干啥
+     */
+    @Override
+    public void run() {
+        for(int i=0;i<5;i++){
+            System.out.println("子线程执行输出"+i);
+        }
+    }
+}
+
+```
+
+**优缺点：**
+
+1.只能继承一个Thread类，无法继承其他类，不利于扩展。
+
+2.编码简单。
+
+**注意：**
+
+1为什么不直接调用run而用start：
+
+t.start();//告诉操作系统以线程方式启动run方法，直接run会认为是普通方法。
+
+2把主线程任务放在子线程任务t.start();之后：
+
+不然会先跑完主线程，没起到多线程的作用。
+
+
+
+##### 二、实现Runnable接口
+
+1定义一个线程任务类MyRunnable实现Runnable()接口，重写run()方法
+
+2创建MyRunnable任务对象
+
+3把MyRunnable任务对象交给Thread处理
+
+4调用线程对象的start()方法启动线程（启动后还是执行run方法的）
+
+**Thread构造器：**
+
+```java
+Thread(Runnable target)//封装Runnable对象为线程对象
+Thread(Runnable target, String name)//封装Runnable对象为线程对象，并指定线程名称
+Thread(String name)//可以为当前线程指定名称
+```
+
+```java
+package com.xfzy.d1_creat;
+
+public class ThreadDemo02 {
+    public static void main(String[] args) {
+        //2创建MyRunnable任务对象
+        Runnable target = new myRunnable();
+        //3把MyRunnable任务对象交给Thread处理
+        //4调用线程对象的start()方法启动线程（启动后还是执行run方法的）
+        new Thread(target).start();
+        for(int i=0;i<5;i++){
+            System.out.println("主线程执行输出"+i);
+        }
+    }
+}
+
+/**
+ * 1定义一个线程任务类MyRunnable实现Runnable()接口，重写run()方法
+ */
+class myRunnable implements Runnable{
+    @Override
+    public void run() {
+        for(int i=0;i<5;i++){
+            System.out.println("子线程执行输出"+i);
+        }
+    }
+}
+```
+
+**方式二匿名内部类写法**：
+
+```java
+package com.xfzy.d1_creat;
+
+public class ThreadDemo02 {
+    public static void main(String[] args) {
+        //1线程任务类MyRunnable实现Runnable()接口，重写run()方法
+        //2创建MyRunnable任务对象
+//        Runnable target = new Runnable() {
+//            @Override
+//            public void run() {
+//                for(int i=0;i<5;i++){
+//                    System.out.println("子线程执行输出"+i);
+//                }
+//            }
+//        };
+//        //3把MyRunnable任务对象交给Thread处理
+//        //4调用线程对象的start()方法启动线程（启动后还是执行run方法的）
+//        new Thread(target).start();
+        //3把MyRunnable任务对象交给Thread处理
+        //4调用线程对象的start()方法启动线程（启动后还是执行run方法的）
+        new Thread(()->{
+                for(int i=0;i<5;i++){
+                    System.out.println("子线程执行输出"+i);
+                }
+            }
+        ).start();
+        for(int i=0;i<5;i++){
+            System.out.println("主线程执行输出"+i);
+        }
+    }
+}
+
+```
+
+
+
+**优缺点：**
+
+优点：线程任务类只是实现接口，可以继续继承类和实现接口，扩展性强
+
+缺点：编程多一层对象包装，如果线程有执行结果是不可以直接返回的【只能跑功能】。
+
+
+
+##### 三、JDK5新增：实现Callable接口，结合FutureTask类
+
+前两种方法run方法都不能返回结果，不适合做有线程返回结果的业务场景
+
+解决：jdk5提供了Callable和FutureTask来实现
+
+1得到任务对象：
+
+定义类实现Callable接口，重写call方法，封装要做的事情。
+
+用FutureTask把Callable对象封装成线程任务对象。
+
+2把线程任务对象交给Thread处理
+
+3调用Thread的start方法启动线程，执行任务
+
+4线程执行完毕后，通过FutureTask的get方法去获取任务执行的结果
+
+Future构造器
+
+```java
+FutureTask(Callable<V> callable)//把Callable任务对象封装成FutureTask线程任务对象
+```
+
+API
+
+```java
+V get() throws Exception//获取线程执行call方法返回的结果
+```
+
+例如：
+
+```java
+package com.xfzy.d1_creat;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+
+public class ThreadDemo03 {
+    public static void main(String[] args) {
+        //3创建Callable任务对象
+        Callable<String> call=new MyCallable(100);
+        //4用FutureTask把Callable对象封装成线程任务对象。
+        //      Future对象是Runnable的对象（实现了Runnable其接口），可以交给Thread了
+        //      可以在线程执行完毕之后通过调用其get方法得到线程执行完成的结果
+        FutureTask<String> f1=new FutureTask<>(call);
+        //5交给线程处理
+        Thread t1 = new Thread(f1);
+        //6启动线程
+        t1.start();
+
+
+        Callable<String> call2=new MyCallable(200);
+        FutureTask<String> f2=new FutureTask<>(call2);
+        Thread t2 = new Thread(f2);
+        t2.start();
+
+        try {
+            //如果f1任务没有执行完毕，这里的代码会等待，直到线程一跑完才提取结果
+            String s1=f1.get();
+            System.out.println("第一个结果"+s1);
+            //如果f2任务没有执行完毕，这里的代码会等待，直到线程二跑完才提取结果
+            String s2=f2.get();
+            System.out.println("第二个结果"+s2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+/**
+ * 1定义MyCallable类实现Callable接口，应该申明线程任务执行完毕后的结果的数据类型。
+ */
+class MyCallable implements Callable<String>{
+    private int n;
+    public MyCallable(int n) {
+        this.n = n;
+    }
+    /**
+     * 2重写call方法，封装要做的事情。
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public String call() throws Exception {
+        int sum=0;
+        for (int i =0;i<n;i++){
+            sum+=i;
+        }
+        return "子线程执行结果是"+sum;
+    }
+}
+```
+
+**优缺点：**
+
+优点：线程任务类只是实现接口，可以继续继承类和实现接口，扩展性强。
+
+​			**可以在线程执行完毕后去获取线程执行的结果。**
+
+缺点：代码麻烦点
+
+
+
+#### Thread常用方法
+
+```java
+final String getName()//获取线程名称
+final void setName(String name)//设置名称
+static Thread currentThread()//获取当前线程对象
+    
+//Thread类的线程休眠方法
+public static void sleep(long time)//让当前线程休眠指定的时间后再继续执行，单位为毫秒
+    
+void run()//线程任务方法
+void start()//线程启动方法
+```
+
+#### 构造器
+
+```java
+public Thread(String name)//可以为当前线程指定名称
+public Thread(Runnable target, String name)//封装Runnable对象为线程对象，并指定线程名称
+```
+
+
+
+#### 线程安全问题
+
+多个线程同时操作同一个共享资源的时候会出现业务安全问题，称为线程安全问题。
+
+**出现的原因：**
+
+存在多线程并发
+
+同时访问共享资源
+
+存在修改共享资源
+
+**如何解决：**
+
+让多个线程实现先后依次访问共享资源。
+
+**线程同步核心思想：**
+
+加锁，把共享资源进行上锁，每次只能一个线程进入访问完毕后解锁，然后其他线程才能进来。
+
+
+
+##### 同步代码块
+
+作用：把出现线程安全问题的核心代码上锁
+
+原理：每次只能一个线程进入，执行完毕后自动解锁，其他线程才可以进来执行。
+
+```java
+synchronized(同步锁对象){
+	操作共享资源的核心代码(核心代码)
+}
+```
+
+锁对象要求：
+
+理论上：锁对象只要对于当前同时执行的线程来说是同一个对象即可。
+
+规范上： 建议使用共享资源作为锁对象,
+
+​				对于实例方法建议使用this作为锁对象,
+
+​				对于静态方法建议使用字节码(类名.class)对象作为锁对象
+
+
+
+##### 同步方法
+
+作用：把出现线程安全问题的核心方法上锁
+
+原理：每次只能一个线程进入，执行完毕后自动解锁，其他线程才可以进来执行。
+
+```java
+修饰符 synchronized 返回值类型 方法名称(形参列表){
+	操作共享资源的代码
+}
+```
+
+**同步方法底层原理:**
+
+底层也是有隐式锁对象的,只是锁的范围是整个方法代码.
+
+实例方法： 同步方法默认用this作为锁对象,但是代码要高度面向对象!
+
+静态方法:    同步方法默认用字节码(类名.class)对象作为锁对象
+
+
+
+##### Lock锁:
+
+为了更清晰的表达如何加锁放锁,jdk5以后提供了一个新的锁对象Lock,更灵活方便.
+
+Lock是接口不能直接实例化,这里采用它的实现类ReentrantLock来构建Lock锁对象.
+
+```java
+ReentrantLock()//获得Lock锁的实现类对象
+```
+
+Lock的Api
+
+```java
+void lock()//获得锁
+void unlock()//释放锁
+```
+
+```java
+ class X {
+   private final ReentrantLock lock = new ReentrantLock();
+   // ...
+
+   public void m() {
+     lock.lock();  // block until condition holds
+     try {
+       // ... method body
+     } finally {
+       lock.unlock();//异常结构防止死锁
+     }
+   }
+ }
+```
+
+
+
+#### 线程通信
+
+线程通信:线程间相互发送数据,通常通过一个共享数据的方式实现.
+
+线程间会根据共享数据的情况决定自己该怎么做,以及通知其他线程怎么做.
+
+##### 常见模型:
+
+生产者与消费者模型:生产者线程负责生产数据,消费者线程负责消费数据.
+
+要求:生产者线程生产完数据后,唤醒消费者,然后等待自己.消费者消费完该数据后,唤醒生产者,然后等待自己.
+
+Object类的等待和唤醒:
+
+```java
+final void wait()//让线程等待并释放所占锁,直到另一个线程调用notify()方法或notifyAll()方法
+final void notify()//唤醒正在等待的单个线程
+final void notifyAll()//唤醒正在等待的所有线程
+```
+
+上述方法应该使用**当前同步锁对象**进行调用.
+
+
+
+
+
+#### 线程池
+
+线程池就是一个可以复用线程的技术.
+
+**不使用线程池的问题**
+
+如果用户每发起一个请求,后台就创建一个新线程来处理,下次任务来了又创建新线程,而**创建新线程的开销是很大的**,这样会严重影响系统的性能.
+
+线程池:工作线程+任务队列.
+
+任务接口:Runnable  Callable
+
+
+
+JDK5提供了代表线程池的接口: ExecutorService
+
+##### 如何得到线程池对象:
+
+**方式一:**使用**ExectorService**的实现类**ThreadPoolExecutor**自创建一个线程池对象
+
+**构造器:**七个参数
+
+```java
+ThreadPoolExecutor(int corePoolSize, //核心线程数量
+                   int maximumPoolSize, //指定线程池可支持的最大线程数,最大数量>=核心线程数量
+                   long keepAliveTime, //指定临时线程的最大存活时间
+                   TimeUnit unit, //指定存活时间的单位(s,h,min,day)
+                   BlockingQueue<Runnable> workQueue, //指定任务队列
+                   ThreadFactory threadFactory, //指定用哪个线程工厂创建线程
+                   RejectedExecutionHandler handler)//指定任务忙,任务满的时候,新任务来了怎么办
+```
+
+现实世界ktv例子.
+
+**面试题:**
+
+**临时线程什么时候创建:**
+
+新任务提交时发现**核心线程都在忙,** **任务队列也满了**,并且还可以创建临时线程,此时才会创建临时线程.
+
+**什么时候开始拒绝任务**:
+
+核心线程和临时线程都在忙,任务队列也满了,新的任务过来的时候才会开始任务拒绝.
+
+**新任务拒绝策略：**
+
+```java
+static class ThreadPoolExecutor.AbortPolicy//丢弃任务并抛出异常，是默认策略
+static class ThreadPoolExecutor.CallerRunsPolicy//由主线程负责调用任务的run()方法从而绕过线程池直接执行【老板亲自服务】
+static class ThreadPoolExecutor.DiscardOldestPolicy//抛弃任务队列中等待最久的任务，然后把当前任务加入队列中
+static class ThreadPoolExecutor.DiscardPolicy//丢弃任务，不抛出异常，不推荐
+```
+
+**线程池处理Runnable任务**
+
+**线程池如何处理Runnable任务：**
+
+```java
+void execute(Runnable target)//执行任务，命令，一般用来执行Runnable任务
+```
+
+例如：
+
+```java
+package com.xfzy.d8_threadPool;
+
+import java.util.concurrent.*;
+
+public class ThreadPoolDemo01 {
+    public static void main(String[] args) {
+        //1创建线程池对象
+        ExecutorService pool = new ThreadPoolExecutor(3,5,
+                6, TimeUnit.SECONDS,new ArrayBlockingQueue<>(5),
+                Executors.defaultThreadFactory(),new ThreadPoolExecutor.AbortPolicy());
+        //2给任务线程池处理
+        Runnable target =new MyRunnable();
+        pool.execute(target);
+        pool.execute(target);
+        pool.execute(target);
+
+        pool.execute(target);
+        pool.execute(target);
+        pool.execute(target);
+        pool.execute(target);
+        pool.execute(target);
+
+        //创建临时线程
+        pool.execute(target);
+        pool.execute(target);
+
+        //不创建，拒绝策略被触发
+        pool.execute(target);
+
+        //关闭线程池（开发一般不会用）
+        pool.shutdownNow();//立即关闭，即使任务没有完成，丢失任务的。返回任务队列中未执行的任务
+        pool.shutdown();//会等待全部任务执行完毕之后再关闭。（柔和一点）
+    }
+}
+public class MyRunnable implements Runnable{
+    @Override
+    public void run() {
+        for (int i=0;i<5;i++){
+            System.out.println(Thread.currentThread().getName()+"输出了：helloword"+i);
+        }
+    }
+}
+
+```
+
+**线程池处理Callable任务**
+
+```java
+Future<T> submit(Callable<T> task)//执行Callable任务，返回未来任务对象获取线程结果
+```
+
+
+
+例如：
+
+```java
+package com.xfzy.d8_threadPool;
+
+import java.util.concurrent.*;
+
+public class ThreadPoolDemo02 {
+    public static void main(String[] args) throws Exception {
+        //1创建线程池对象
+        ExecutorService pool = new ThreadPoolExecutor(3,5,
+                6, TimeUnit.SECONDS,new ArrayBlockingQueue<>(5),
+                Executors.defaultThreadFactory(),new ThreadPoolExecutor.AbortPolicy());
+        //2给任务线程池处理
+        Future<String> f1=pool.submit(new MyCallable(100));
+        Future<String> f2=pool.submit(new MyCallable(200));
+        Future<String> f3=pool.submit(new MyCallable(300));
+        Future<String> f4=pool.submit(new MyCallable(400));
+        Future<String> f5=pool.submit(new MyCallable(500));
+
+        System.out.println(f1.get());
+        System.out.println(f2.get());
+        System.out.println(f3.get());
+        System.out.println(f4.get());
+        System.out.println(f5.get());
+
+
+        //创建临时线程
+//        pool.submit(new MyCallable(100));
+//        pool.submit(new MyCallable(100));
+
+        //不创建，拒绝策略被触发
+//        pool.submit(new MyCallable(100));
+
+        //关闭线程池（开发一般不会用）
+//        pool.shutdownNow();//立即关闭，即使任务没有完成，丢失任务的。
+        pool.shutdown();//会等待全部任务执行完毕之后再关闭。（柔和一点）
+    }
+}
+
+
+package com.xfzy.d8_threadPool;
+
+import java.util.concurrent.Callable;
+
+
+public class MyCallable implements Callable<String>{
+    private int n;
+    public MyCallable(int n) {
+        this.n = n;
+    }
+    @Override
+    public String call() throws Exception {
+        int sum=0;
+        for (int i =0;i<n;i++){
+            sum+=i;
+        }
+        return Thread.currentThread().getName()+"子线程执行1-"+n+"结果是"+sum;
+    }
+}
+
+```
+
+
+
+方式二:使用Executors(线程池的工具类)**调用方法**返回**不同特点的线程池对象**.
+
+```java
+static ExecutorService newCachedThreadPool()//线程任务随任务增加而增加，如果线程任务执行完毕且空闲了一段时间则会被回收掉
+static ExecutorService newFixedThreadPool(int nThreads)//创建固定线程数量的线程池，如果某个线程出现异常而结束，那么线程池会补充一个新线程替代他。
+static ExecutorService newSingleThreadExecutor()//创建只有一个线程的线程池对象，如果该线程出现异常而结束，那么线程池会补充一个新线程。
+static ScheduledExecutorService newScheduledThreadPool(int corePoolSize)//创建一个线程池，可以实现在给定的延迟后运行任务，或者定期执行任务。
+```
+
+Executors的底层其实也是基于线程池的实现类ThreadPoolExcutor创建线程池对象的。
+
+Executors在某些**大型系统环境**中，如果**不注意将会出现系统风险**（任务队列长度不受限、创建线程数不受限，可能会出现outofmemoryError）
+
+
+
+#### 定时器
+
+控制任务延时调用、周期调用
+
+作用：闹钟、定时邮件发送。
+
+定时器实现方式：
+
+1、Timer
+
+```java
+Timer()
+```
+
+```java
+void schedule(TimerTask task, long delay, long period)
+```
+
+timer存在的问题：是**单线程，处理多个任务按照顺序执行，存在延时与设置定时器的时间有出入**。
+
+可能因为其中**某个任务的异常使Timer线程死掉，从而影响后续任务执行**。
+
+2、ScheduledExecutorService
+
+jdk1.5中引入了并发包，目的是为了弥补Timer的缺陷，ScheduledExecutorService内部为线程池。
+
+Executors的方法：
+
+```java
+static ScheduledExecutorService newScheduledThreadPool(int corePoolSize)
+```
+
+
+ScheduledExecutorService的方法：
+
+```java
+ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit)
+```
+
+ScheduledExecutorService优点：基于线程池，某个任务执行情况不会影响其他定时任务的执行。
+
+
+
+#### 线程并发、并行
+
+线程生命周期中的6种状态。
+
+并发：cpu同时处理线程的数量有限。
+
+​			cpu会**分时轮询**为系统的每个线程服务，由于cpu切换的速度很快，给我们感觉这些线程就是在同时执行，这就是并发。
+
+并行：在同一时刻，同时有多个线程在被cpu处理并执行。
+
+
+
+#### 线程的生命周期：
+
+线程的状态：6种，定义在Thread类的内部枚举类中。
+
+New新建：刚创建没有启动
+
+Runnable可运行：调用了start等待cpu调度
+
+Teminated被终止：run正常推出，或者没有捕获的异常终止了run
+
+Blocked锁阻塞：线程执行时未竞争到锁对象
+
+Waiting无限等待：只有另一个线程调用notify、notifyAll才能唤醒这个线程
+
+Timed Waiting计时等待：有几个方法由超时参数，调用他们就会进入此状态，Thread.sleep,Object.wait
+
+
+
+### 42网络编程
+
+网络通信三要素：ip  端口  协议
+
+#### ip地址操作类：InetAddress
